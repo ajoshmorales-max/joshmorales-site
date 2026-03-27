@@ -206,8 +206,27 @@
         /* About */
         .about { padding-bottom: 2rem; }
         .about-label { font-family: var(--font-heading); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-weight: 500; margin-bottom: 1.5rem; }
-        .about p { font-size: clamp(1.1rem, 1.5vw, 1.3rem); max-width: 680px; line-height: 1.7; color: var(--text-secondary); }
+        .about-layout { display: flex; align-items: flex-start; gap: 3rem; }
+        .about-content { flex: 1 1 0%; }
+        .about-content p { font-size: clamp(1.1rem, 1.5vw, 1.3rem); max-width: 680px; line-height: 1.7; color: var(--text-secondary); }
         .about .highlight-name { color: var(--text-main); font-weight: 500; }
+        .about-video-wrap {
+            flex: 0 0 220px;
+            max-width: 220px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .about-video-wrap video {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+        }
+        @media (max-width: 768px) {
+            .about-layout { flex-direction: column; align-items: center; }
+            .about-video-wrap { flex: none; max-width: 180px; order: -1; }
+        }
 
         /* CTA */
         .cta-section { text-align: center; padding: 8rem 0 6rem; }
@@ -285,7 +304,16 @@
 
             <section class="about">
                 <div class="about-label reveal">About</div>
-                <p class="reveal delay-1">I'm <span class="highlight-name">Josh Morales</span>, an AI implementation specialist. I help small businesses identify where AI fits into their operations and build the systems to make it work. No hype, no buzzwords &mdash; just practical automation that saves real time.</p>
+                <div class="about-layout">
+                    <div class="about-content">
+                        <p class="reveal delay-1">I'm <span class="highlight-name">Josh Morales</span>, an AI implementation specialist. I help small businesses identify where AI fits into their operations and build the systems to make it work. No hype, no buzzwords &mdash; just practical automation that saves real time.</p>
+                    </div>
+                    <div class="about-video-wrap reveal delay-2">
+                        <video autoplay muted loop playsinline disablepictureinpicture>
+                            <source src="avatar-video.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
             </section>
 
             <div class="divider reveal"></div>
