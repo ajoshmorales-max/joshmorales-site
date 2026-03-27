@@ -6,7 +6,7 @@
     <title>Josh Morales | AI Implementation Specialist</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #FAFAFA;
@@ -15,15 +15,11 @@
             --text-muted: #8B8B9E;
             --accent: #0D9488;
             --accent-light: #14B8A6;
-            --accent-bg: #F0FDFA;
             --border: #E5E5EA;
-            --card-bg: #FFFFFF;
             --font-heading: 'Outfit', sans-serif;
             --font-body: 'Manrope', sans-serif;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             background-color: var(--bg);
             color: var(--text-main);
@@ -32,218 +28,154 @@
             line-height: 1.7;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            overflow: hidden;
         }
-
+        body.loaded { overflow: auto; }
         ::selection { background: var(--accent); color: #fff; }
         a { text-decoration: none; color: inherit; }
-
-        h1, h2, h3, .heading-font {
-            font-family: var(--font-heading);
-            letter-spacing: -0.025em;
-            line-height: 1.1;
-            font-weight: 500;
-            color: var(--text-main);
-        }
-
+        h1, h2 { font-family: var(--font-heading); letter-spacing: -0.025em; line-height: 1.1; font-weight: 500; color: var(--text-main); }
         h1 { font-size: clamp(2.5rem, 5.5vw, 4.5rem); }
         h2 { font-size: clamp(1.8rem, 3.5vw, 3rem); }
         p { font-size: clamp(1.05rem, 1.3vw, 1.2rem); color: var(--text-secondary); }
+        .container { width: 90%; max-width: 900px; margin: 0 auto; }
 
-        /* ---- Layout ---- */
-        .container {
-            width: 90%;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        /* ---- Nav ---- */
-        nav {
-            padding: 2rem 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
+        /* ==========================================
+           INTRO ANIMATION
+           ========================================== */
+        .intro-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: #0A0A0F;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo-mark {
-            font-family: var(--font-heading);
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--accent);
-            letter-spacing: -0.04em;
-        }
-
-        .logo-text {
-            display: flex;
+            justify-content: center;
             flex-direction: column;
-            gap: 0.1rem;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .logo-name {
-            font-family: var(--font-heading);
-            font-size: 0.95rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-main);
-        }
-
-        .logo-tagline {
-            font-family: var(--font-body);
-            font-size: 0.55rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            font-weight: 400;
-        }
-
-        /* ---- Button ---- */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.75rem 1.6rem;
-            background: var(--accent);
-            color: #fff;
-            font-family: var(--font-heading);
-            font-size: 0.9rem;
-            font-weight: 500;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: background 0.25s ease, transform 0.25s ease;
-        }
-
-        .btn:hover {
-            background: var(--accent-light);
-            transform: translateY(-1px);
-        }
-
-        .btn-large {
-            padding: 1.1rem 2.2rem;
-            font-size: 1.05rem;
-            border-radius: 10px;
-        }
-
-        /* ---- Hero ---- */
-        .hero {
-            padding: 12vh 0 10vh;
-        }
-
-        .hero-label {
-            font-family: var(--font-heading);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--accent);
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero h1 {
-            margin-bottom: 1.75rem;
-        }
-
-        .hero h1 em {
-            font-style: italic;
-            color: var(--accent);
-        }
-
-        .hero > p {
-            font-size: clamp(1.1rem, 1.5vw, 1.3rem);
-            max-width: 680px;
-            line-height: 1.65;
-            color: var(--text-secondary);
-        }
-
-        /* ---- Divider ---- */
-        .divider {
-            height: 1px;
-            width: 100%;
-            background: var(--border);
-            margin: 6rem 0;
-        }
-
-        /* ---- About ---- */
-        .about {
-            padding-bottom: 2rem;
-        }
-
-        .about-label {
-            font-family: var(--font-heading);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--accent);
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-        }
-
-        .about p {
-            font-size: clamp(1.1rem, 1.5vw, 1.3rem);
-            max-width: 680px;
-            line-height: 1.7;
-            color: var(--text-secondary);
-        }
-
-        .about .highlight-name {
-            color: var(--text-main);
-            font-weight: 500;
-        }
-
-        /* ---- CTA ---- */
-        .cta-section {
-            text-align: center;
-            padding: 8rem 0 6rem;
-        }
-
-        .cta-section h2 {
-            margin-bottom: 1.25rem;
-        }
-
-        .cta-section p {
-            margin-bottom: 2.5rem;
-            font-size: clamp(1.05rem, 1.4vw, 1.2rem);
-            max-width: 550px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* ---- Footer ---- */
-        footer {
-            padding: 3rem 0;
-            text-align: center;
-            border-top: 1px solid var(--border);
-        }
-
-        footer p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        /* ---- Scroll reveal ---- */
-        .reveal {
+        .intro-overlay.fade-out {
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
-                        transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+            pointer-events: none;
         }
 
-        .reveal.active {
+        .intro-text {
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .intro-line {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(100%);
+            display: block;
+        }
+        .intro-line-1 {
+            font-size: clamp(0.85rem, 1.5vw, 1rem);
+            letter-spacing: 0.25em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+        }
+        .intro-line-2 {
+            font-size: clamp(2.5rem, 7vw, 5.5rem);
+            letter-spacing: 0.02em;
+            line-height: 1.05;
+        }
+        .intro-line-3 {
+            font-size: clamp(2.5rem, 7vw, 5.5rem);
+            letter-spacing: 0.02em;
+            line-height: 1.05;
+        }
+        .intro-line-3 .accent {
+            color: var(--accent);
+        }
+
+        /* Thin accent line that wipes across */
+        .intro-wipe {
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            margin: 1.5rem auto 0;
+            transition: none;
+        }
+
+        /* Animate classes */
+        .intro-line.animate-in {
+            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .intro-wipe.animate-in {
+            animation: wipeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(60px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes wipeIn {
+            from { width: 0; }
+            to { width: min(200px, 30vw); }
+        }
+
+        /* ==========================================
+           MAIN SITE (hidden until intro finishes)
+           ========================================== */
+        .site-content {
+            opacity: 0;
+            transition: opacity 0.6s ease 0.3s;
+        }
+        .site-content.visible {
             opacity: 1;
-            transform: translateY(0);
         }
 
+        /* Nav */
+        nav { padding: 2rem 0; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-mark { font-family: var(--font-heading); font-size: 0.9rem; font-weight: 600; color: var(--accent); letter-spacing: -0.04em; }
+        .logo-text { display: flex; flex-direction: column; gap: 0.1rem; }
+        .logo-name { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-main); }
+        .logo-tagline { font-family: var(--font-body); font-size: 0.55rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 400; }
+
+        /* Button */
+        .btn { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1.6rem; background: var(--accent); color: #fff; font-family: var(--font-heading); font-size: 0.9rem; font-weight: 500; border-radius: 8px; border: none; cursor: pointer; transition: background 0.25s ease, transform 0.25s ease; }
+        .btn:hover { background: var(--accent-light); transform: translateY(-1px); }
+        .btn-large { padding: 1.1rem 2.2rem; font-size: 1.05rem; border-radius: 10px; }
+
+        /* Hero */
+        .hero { padding: 12vh 0 10vh; }
+        .hero-label { font-family: var(--font-heading); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-weight: 500; margin-bottom: 1.5rem; }
+        .hero h1 { margin-bottom: 1.75rem; }
+        .hero h1 em { font-style: italic; color: var(--accent); }
+        .hero > p { font-size: clamp(1.1rem, 1.5vw, 1.3rem); max-width: 680px; line-height: 1.65; color: var(--text-secondary); }
+
+        /* Divider */
+        .divider { height: 1px; width: 100%; background: var(--border); margin: 6rem 0; }
+
+        /* About */
+        .about { padding-bottom: 2rem; }
+        .about-label { font-family: var(--font-heading); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-weight: 500; margin-bottom: 1.5rem; }
+        .about p { font-size: clamp(1.1rem, 1.5vw, 1.3rem); max-width: 680px; line-height: 1.7; color: var(--text-secondary); }
+        .about .highlight-name { color: var(--text-main); font-weight: 500; }
+
+        /* CTA */
+        .cta-section { text-align: center; padding: 8rem 0 6rem; }
+        .cta-section h2 { margin-bottom: 1.25rem; }
+        .cta-section p { margin-bottom: 2.5rem; font-size: clamp(1.05rem, 1.4vw, 1.2rem); max-width: 550px; margin-left: auto; margin-right: auto; }
+
+        /* Footer */
+        footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); }
+        footer p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Scroll reveal */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
         .delay-1 { transition-delay: 0.1s; }
         .delay-2 { transition-delay: 0.2s; }
         .delay-3 { transition-delay: 0.3s; }
 
-        /* ---- Mobile ---- */
+        /* Mobile */
         @media (max-width: 768px) {
             .hero { padding: 8vh 0 6vh; }
             nav { padding: 1.25rem 0; }
@@ -251,59 +183,98 @@
             .cta-section { padding: 5rem 0 4rem; }
         }
 
-        /* ---- Reduced motion ---- */
+        /* Reduced motion */
         @media (prefers-reduced-motion: reduce) {
-            .reveal {
-                opacity: 1;
-                transform: none;
-                transition: none;
-            }
+            .intro-overlay { display: none; }
+            .site-content { opacity: 1; transition: none; }
+            body { overflow: auto; }
+            .reveal { opacity: 1; transform: none; transition: none; }
             .btn { transition: none; }
             .btn:hover { transform: none; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <nav>
-            <div class="logo">
-                <div class="logo-mark">JM</div>
-                <div class="logo-text">
-                    <div class="logo-name">Josh Morales</div>
-                    <div class="logo-tagline">AI Implementation</div>
+
+    <!-- INTRO ANIMATION -->
+    <div class="intro-overlay" id="introOverlay">
+        <div class="intro-text">
+            <span class="intro-line intro-line-1" id="line1">A new era has begun</span>
+            <span class="intro-line intro-line-2" id="line2">The AI Revolution</span>
+            <span class="intro-line intro-line-3" id="line3">Is <span class="accent">Here.</span></span>
+            <div class="intro-wipe" id="introWipe"></div>
+        </div>
+    </div>
+
+    <!-- MAIN SITE -->
+    <div class="site-content" id="siteContent">
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <div class="logo-mark">JM</div>
+                    <div class="logo-text">
+                        <div class="logo-name">Josh Morales</div>
+                        <div class="logo-tagline">AI Implementation</div>
+                    </div>
                 </div>
-            </div>
-            <a href="https://cal.com/joshmorales-ai" class="btn">Book a Call</a>
-        </nav>
+                <a href="https://cal.com/joshmorales-ai" class="btn">Book a Call</a>
+            </nav>
 
-        <section class="hero">
-            <div class="hero-label reveal">AI Implementation Specialist</div>
-            <h1 class="reveal delay-1">Most businesses have no idea what AI can <em>realistically</em> do today.</h1>
-            <p class="reveal delay-2">The gap between what AI can do and what businesses are actually using it for is massive. I close that gap.</p>
-        </section>
+            <section class="hero">
+                <div class="hero-label reveal">AI Implementation Specialist</div>
+                <h1 class="reveal delay-1">Most businesses have no idea what AI can <em>realistically</em> do today.</h1>
+                <p class="reveal delay-2">The gap between what AI can do and what businesses are actually using it for is massive. I close that gap.</p>
+            </section>
 
-        <div class="divider reveal"></div>
+            <div class="divider reveal"></div>
 
-        <section class="about">
-            <div class="about-label reveal">About</div>
-            <p class="reveal delay-1">I'm <span class="highlight-name">Josh Morales</span>, an AI implementation specialist. I help small businesses identify where AI fits into their operations and build the systems to make it work. No hype, no buzzwords &mdash; just practical automation that saves real time.</p>
-        </section>
+            <section class="about">
+                <div class="about-label reveal">About</div>
+                <p class="reveal delay-1">I'm <span class="highlight-name">Josh Morales</span>, an AI implementation specialist. I help small businesses identify where AI fits into their operations and build the systems to make it work. No hype, no buzzwords &mdash; just practical automation that saves real time.</p>
+            </section>
 
-        <div class="divider reveal"></div>
+            <div class="divider reveal"></div>
 
-        <section class="cta-section">
-            <h2 class="reveal">Ready to find out what AI<br>can do for your business?</h2>
-            <p class="reveal delay-1">Book a free discovery call to see where you're leaving time on the table.</p>
-            <a href="https://cal.com/joshmorales-ai" class="btn btn-large reveal delay-2">Book a Discovery Call <span>&rarr;</span></a>
-        </section>
+            <section class="cta-section">
+                <h2 class="reveal">Ready to find out what AI<br>can do for your business?</h2>
+                <p class="reveal delay-1">Book a free discovery call to see where you're leaving time on the table.</p>
+                <a href="https://cal.com/joshmorales-ai" class="btn btn-large reveal delay-2">Book a Discovery Call <span>&rarr;</span></a>
+            </section>
 
-        <footer>
-            <p>&copy; 2026 Josh Morales. All rights reserved.</p>
-        </footer>
+            <footer>
+                <p>&copy; 2026 Josh Morales. All rights reserved.</p>
+            </footer>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const line1 = document.getElementById('line1');
+            const line2 = document.getElementById('line2');
+            const line3 = document.getElementById('line3');
+            const wipe = document.getElementById('introWipe');
+            const overlay = document.getElementById('introOverlay');
+            const site = document.getElementById('siteContent');
+
+            // Staggered line animations
+            setTimeout(() => line1.classList.add('animate-in'), 300);
+            setTimeout(() => line2.classList.add('animate-in'), 800);
+            setTimeout(() => line3.classList.add('animate-in'), 1200);
+            setTimeout(() => wipe.classList.add('animate-in'), 1600);
+
+            // Hold, then fade out intro and reveal site
+            setTimeout(() => {
+                overlay.classList.add('fade-out');
+                site.classList.add('visible');
+                document.body.classList.add('loaded');
+            }, 3400);
+
+            // Remove overlay from DOM after transition
+            setTimeout(() => {
+                overlay.remove();
+            }, 4400);
+
+            // Scroll reveal for main site elements
             const observer = new IntersectionObserver((entries, obs) => {
                 entries.forEach(entry => {
                     if (!entry.isIntersecting) return;
@@ -312,7 +283,10 @@
                 });
             }, { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
 
-            document.querySelectorAll('.reveal:not(.active)').forEach(el => observer.observe(el));
+            // Start observing after site becomes visible
+            setTimeout(() => {
+                document.querySelectorAll('.reveal:not(.active)').forEach(el => observer.observe(el));
+            }, 3600);
         });
     </script>
 </body>
