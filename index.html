@@ -102,6 +102,79 @@
             transition: none;
         }
 
+        /* Intro logo (appears after main text) */
+        .intro-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 2.5rem;
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        .intro-logo-mark {
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: -0.04em;
+        }
+        .intro-logo-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.08rem;
+            text-align: left;
+        }
+        .intro-logo-name {
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+        .intro-logo-tagline {
+            font-family: var(--font-body);
+            font-size: 0.5rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .intro-logo.animate-in {
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Animated scroll arrow */
+        .intro-arrow {
+            position: absolute;
+            bottom: 8vh;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .intro-arrow.animate-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .intro-arrow svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-muted);
+            animation: arrowBounce 1.5s ease-in-out infinite;
+        }
+        .intro-arrow svg:nth-child(2) {
+            margin-top: -10px;
+            opacity: 0.4;
+            animation-delay: 0.15s;
+        }
+
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateY(0); opacity: 0.6; }
+            50% { transform: translateY(6px); opacity: 1; }
+        }
+
         /* Animate classes */
         .intro-line.animate-in {
             animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -113,6 +186,14 @@
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(60px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         @keyframes wipeIn {
             from { width: 0; }
@@ -199,10 +280,20 @@
     <!-- INTRO ANIMATION -->
     <div class="intro-overlay" id="introOverlay">
         <div class="intro-text">
-            <span class="intro-line intro-line-1" id="line1">A new era has begun</span>
             <span class="intro-line intro-line-2" id="line2">The AI Revolution</span>
             <span class="intro-line intro-line-3" id="line3">Is <span class="accent">Here.</span></span>
             <div class="intro-wipe" id="introWipe"></div>
+            <div class="intro-logo" id="introLogo">
+                <div class="intro-logo-mark">JM</div>
+                <div class="intro-logo-text">
+                    <div class="intro-logo-name">Josh Morales</div>
+                    <div class="intro-logo-tagline">AI Implementation</div>
+                </div>
+            </div>
+        </div>
+        <div class="intro-arrow" id="introArrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
     </div>
 
@@ -249,30 +340,32 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const line1 = document.getElementById('line1');
             const line2 = document.getElementById('line2');
             const line3 = document.getElementById('line3');
             const wipe = document.getElementById('introWipe');
+            const introLogo = document.getElementById('introLogo');
+            const introArrow = document.getElementById('introArrow');
             const overlay = document.getElementById('introOverlay');
             const site = document.getElementById('siteContent');
 
-            // Staggered line animations
-            setTimeout(() => line1.classList.add('animate-in'), 300);
-            setTimeout(() => line2.classList.add('animate-in'), 800);
-            setTimeout(() => line3.classList.add('animate-in'), 1200);
-            setTimeout(() => wipe.classList.add('animate-in'), 1600);
+            // Sequence: main text → wipe → logo → arrow
+            setTimeout(() => line2.classList.add('animate-in'), 300);
+            setTimeout(() => line3.classList.add('animate-in'), 800);
+            setTimeout(() => wipe.classList.add('animate-in'), 1200);
+            setTimeout(() => introLogo.classList.add('animate-in'), 1800);
+            setTimeout(() => introArrow.classList.add('animate-in'), 2200);
 
             // Hold, then fade out intro and reveal site
             setTimeout(() => {
                 overlay.classList.add('fade-out');
                 site.classList.add('visible');
                 document.body.classList.add('loaded');
-            }, 3400);
+            }, 4000);
 
             // Remove overlay from DOM after transition
             setTimeout(() => {
                 overlay.remove();
-            }, 4400);
+            }, 5000);
 
             // Scroll reveal for main site elements
             const observer = new IntersectionObserver((entries, obs) => {
@@ -286,7 +379,7 @@
             // Start observing after site becomes visible
             setTimeout(() => {
                 document.querySelectorAll('.reveal:not(.active)').forEach(el => observer.observe(el));
-            }, 3600);
+            }, 4200);
         });
     </script>
 </body>
