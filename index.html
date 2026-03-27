@@ -327,18 +327,20 @@
                 overlay.remove();
             }, 4200);
 
-            // Scroll reveal for main site elements
-            const observer = new IntersectionObserver((entries, obs) => {
+            // Scroll reveal — repeats on every enter/exit
+            const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (!entry.isIntersecting) return;
-                    obs.unobserve(entry.target);
-                    requestAnimationFrame(() => entry.target.classList.add('active'));
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    } else {
+                        entry.target.classList.remove('active');
+                    }
                 });
             }, { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
 
             // Start observing after site becomes visible
             setTimeout(() => {
-                document.querySelectorAll('.reveal:not(.active)').forEach(el => observer.observe(el));
+                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
             }, 3400);
         });
     </script>
