@@ -80,9 +80,12 @@
             margin-bottom: 1rem;
         }
         .intro-line-2 {
-            font-size: clamp(2.5rem, 7vw, 5.5rem);
-            letter-spacing: 0.02em;
+            font-size: clamp(1rem, 1.8vw, 1.3rem);
+            letter-spacing: 0.18em;
             line-height: 1.05;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 400;
         }
         .intro-line-3 {
             font-size: clamp(2.5rem, 7vw, 5.5rem);
@@ -107,14 +110,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.6rem;
-            margin-bottom: 2.5rem;
+            gap: 1.2rem;
+            margin-bottom: 2rem;
             opacity: 0;
             transform: translateY(15px);
         }
         .intro-logo-mark {
             font-family: var(--font-heading);
-            font-size: 0.85rem;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
             font-weight: 600;
             color: var(--accent);
             letter-spacing: -0.04em;
@@ -122,12 +125,12 @@
         .intro-logo-text {
             display: flex;
             flex-direction: column;
-            gap: 0.08rem;
+            gap: 0.15rem;
             text-align: left;
         }
         .intro-logo-name {
             font-family: var(--font-heading);
-            font-size: 0.85rem;
+            font-size: clamp(2rem, 4vw, 3rem);
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -135,7 +138,7 @@
         }
         .intro-logo-tagline {
             font-family: var(--font-body);
-            font-size: 0.5rem;
+            font-size: clamp(0.7rem, 1.2vw, 1rem);
             letter-spacing: 0.14em;
             text-transform: uppercase;
             color: var(--text-muted);
@@ -339,21 +342,21 @@
             const site = document.getElementById('siteContent');
 
             // Sequence: logo → main text → wipe
-            setTimeout(() => introLogo.classList.add('animate-in'), 300);
-            setTimeout(() => line2.classList.add('animate-in'), 900);
-            setTimeout(() => wipe.classList.add('animate-in'), 1400);
+            setTimeout(() => introLogo.classList.add('animate-in'), 200);
+            setTimeout(() => line2.classList.add('animate-in'), 600);
+            setTimeout(() => wipe.classList.add('animate-in'), 900);
 
             // Hold, then fade out intro and reveal site
             setTimeout(() => {
                 overlay.classList.add('fade-out');
                 site.classList.add('visible');
                 document.body.classList.add('loaded');
-            }, 3200);
+            }, 2200);
 
             // Remove overlay from DOM after transition
             setTimeout(() => {
                 overlay.remove();
-            }, 4200);
+            }, 3200);
 
             // Scroll reveal — repeats on every enter/exit
             const observer = new IntersectionObserver((entries) => {
@@ -369,7 +372,7 @@
             // Start observing after site becomes visible
             setTimeout(() => {
                 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-            }, 3400);
+            }, 2400);
         });
     </script>
 </body>
