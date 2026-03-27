@@ -102,12 +102,13 @@
             transition: none;
         }
 
-        /* Intro logo (appears after main text) */
+        /* Intro logo (appears above main text) */
         .intro-logo {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.6rem;
-            margin-top: 2.5rem;
+            margin-bottom: 2.5rem;
             opacity: 0;
             transform: translateY(15px);
         }
@@ -141,38 +142,6 @@
         }
         .intro-logo.animate-in {
             animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* Animated scroll arrow */
-        .intro-arrow {
-            position: absolute;
-            bottom: 8vh;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        .intro-arrow.animate-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        .intro-arrow svg {
-            width: 24px;
-            height: 24px;
-            color: var(--text-muted);
-            animation: arrowBounce 1.5s ease-in-out infinite;
-        }
-        .intro-arrow svg:nth-child(2) {
-            margin-top: -10px;
-            opacity: 0.4;
-            animation-delay: 0.15s;
-        }
-
-        @keyframes arrowBounce {
-            0%, 100% { transform: translateY(0); opacity: 0.6; }
-            50% { transform: translateY(6px); opacity: 1; }
         }
 
         /* Animate classes */
@@ -280,9 +249,6 @@
     <!-- INTRO ANIMATION -->
     <div class="intro-overlay" id="introOverlay">
         <div class="intro-text">
-            <span class="intro-line intro-line-2" id="line2">The AI Revolution</span>
-            <span class="intro-line intro-line-3" id="line3">Is <span class="accent">Here.</span></span>
-            <div class="intro-wipe" id="introWipe"></div>
             <div class="intro-logo" id="introLogo">
                 <div class="intro-logo-mark">JM</div>
                 <div class="intro-logo-text">
@@ -290,10 +256,9 @@
                     <div class="intro-logo-tagline">AI Implementation</div>
                 </div>
             </div>
-        </div>
-        <div class="intro-arrow" id="introArrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <span class="intro-line intro-line-2" id="line2">The AI Revolution</span>
+            <span class="intro-line intro-line-3" id="line3">Is <span class="accent">Here.</span></span>
+            <div class="intro-wipe" id="introWipe"></div>
         </div>
     </div>
 
@@ -340,32 +305,30 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const introLogo = document.getElementById('introLogo');
             const line2 = document.getElementById('line2');
             const line3 = document.getElementById('line3');
             const wipe = document.getElementById('introWipe');
-            const introLogo = document.getElementById('introLogo');
-            const introArrow = document.getElementById('introArrow');
             const overlay = document.getElementById('introOverlay');
             const site = document.getElementById('siteContent');
 
-            // Sequence: main text → wipe → logo → arrow
-            setTimeout(() => line2.classList.add('animate-in'), 300);
-            setTimeout(() => line3.classList.add('animate-in'), 800);
-            setTimeout(() => wipe.classList.add('animate-in'), 1200);
-            setTimeout(() => introLogo.classList.add('animate-in'), 1800);
-            setTimeout(() => introArrow.classList.add('animate-in'), 2200);
+            // Sequence: logo → main text → wipe
+            setTimeout(() => introLogo.classList.add('animate-in'), 300);
+            setTimeout(() => line2.classList.add('animate-in'), 900);
+            setTimeout(() => line3.classList.add('animate-in'), 1400);
+            setTimeout(() => wipe.classList.add('animate-in'), 1800);
 
             // Hold, then fade out intro and reveal site
             setTimeout(() => {
                 overlay.classList.add('fade-out');
                 site.classList.add('visible');
                 document.body.classList.add('loaded');
-            }, 4000);
+            }, 3600);
 
             // Remove overlay from DOM after transition
             setTimeout(() => {
                 overlay.remove();
-            }, 5000);
+            }, 4600);
 
             // Scroll reveal for main site elements
             const observer = new IntersectionObserver((entries, obs) => {
@@ -379,7 +342,7 @@
             // Start observing after site becomes visible
             setTimeout(() => {
                 document.querySelectorAll('.reveal:not(.active)').forEach(el => observer.observe(el));
-            }, 4200);
+            }, 3800);
         });
     </script>
 </body>
