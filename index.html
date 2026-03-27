@@ -59,7 +59,10 @@
         }
 
         .intro-text {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2.5rem;
             overflow: hidden;
         }
 
@@ -80,12 +83,15 @@
             margin-bottom: 1rem;
         }
         .intro-line-2 {
-            font-size: clamp(1rem, 1.8vw, 1.3rem);
+            font-size: clamp(0.9rem, 1.5vw, 1.15rem);
             letter-spacing: 0.18em;
-            line-height: 1.05;
+            line-height: 1.4;
             text-transform: uppercase;
             color: var(--text-muted);
             font-weight: 400;
+            padding-left: 2.5rem;
+            border-left: 2px solid var(--border);
+            white-space: nowrap;
         }
         .intro-line-3 {
             font-size: clamp(2.5rem, 7vw, 5.5rem);
@@ -109,9 +115,7 @@
         .intro-logo {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 1.2rem;
-            margin-bottom: 2rem;
             opacity: 0;
             transform: translateY(15px);
         }
@@ -253,6 +257,8 @@
             nav { padding: 1.25rem 0; }
             .divider { margin: 4rem 0; }
             .cta-section { padding: 5rem 0 4rem; }
+            .intro-text { flex-direction: column; gap: 1.5rem; align-items: center; }
+            .intro-line-2 { border-left: none; padding-left: 0; border-top: 2px solid var(--border); padding-top: 1.2rem; text-align: center; }
         }
 
         /* Reduced motion */
@@ -279,7 +285,6 @@
                 </div>
             </div>
             <span class="intro-line intro-line-2" id="line2">The AI Era Is <span class="accent">Here.</span></span>
-            <div class="intro-wipe" id="introWipe"></div>
         </div>
     </div>
 
@@ -337,26 +342,24 @@
         document.addEventListener('DOMContentLoaded', () => {
             const introLogo = document.getElementById('introLogo');
             const line2 = document.getElementById('line2');
-            const wipe = document.getElementById('introWipe');
             const overlay = document.getElementById('introOverlay');
             const site = document.getElementById('siteContent');
 
-            // Sequence: logo → main text → wipe
+            // Sequence: logo → tagline text
             setTimeout(() => introLogo.classList.add('animate-in'), 200);
-            setTimeout(() => line2.classList.add('animate-in'), 600);
-            setTimeout(() => wipe.classList.add('animate-in'), 900);
+            setTimeout(() => line2.classList.add('animate-in'), 700);
 
             // Hold, then fade out intro and reveal site
             setTimeout(() => {
                 overlay.classList.add('fade-out');
                 site.classList.add('visible');
                 document.body.classList.add('loaded');
-            }, 2200);
+            }, 2000);
 
             // Remove overlay from DOM after transition
             setTimeout(() => {
                 overlay.remove();
-            }, 3200);
+            }, 3000);
 
             // Scroll reveal — repeats on every enter/exit
             const observer = new IntersectionObserver((entries) => {
