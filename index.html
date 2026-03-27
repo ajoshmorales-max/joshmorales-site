@@ -256,8 +256,7 @@
                     <div class="intro-logo-tagline">AI Implementation</div>
                 </div>
             </div>
-            <span class="intro-line intro-line-2" id="line2">The AI Era</span>
-            <span class="intro-line intro-line-3" id="line3">Is <span class="accent">Here.</span></span>
+            <span class="intro-line intro-line-2" id="line2">The AI Era Is <span class="accent">Here.</span></span>
             <div class="intro-wipe" id="introWipe"></div>
         </div>
     </div>
@@ -307,7 +306,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const introLogo = document.getElementById('introLogo');
             const line2 = document.getElementById('line2');
-            const line3 = document.getElementById('line3');
             const wipe = document.getElementById('introWipe');
             const overlay = document.getElementById('introOverlay');
             const site = document.getElementById('siteContent');
@@ -315,20 +313,19 @@
             // Sequence: logo → main text → wipe
             setTimeout(() => introLogo.classList.add('animate-in'), 300);
             setTimeout(() => line2.classList.add('animate-in'), 900);
-            setTimeout(() => line3.classList.add('animate-in'), 1400);
-            setTimeout(() => wipe.classList.add('animate-in'), 1800);
+            setTimeout(() => wipe.classList.add('animate-in'), 1400);
 
             // Hold, then fade out intro and reveal site
             setTimeout(() => {
                 overlay.classList.add('fade-out');
                 site.classList.add('visible');
                 document.body.classList.add('loaded');
-            }, 3600);
+            }, 3200);
 
             // Remove overlay from DOM after transition
             setTimeout(() => {
                 overlay.remove();
-            }, 4600);
+            }, 4200);
 
             // Scroll reveal for main site elements
             const observer = new IntersectionObserver((entries, obs) => {
@@ -342,7 +339,7 @@
             // Start observing after site becomes visible
             setTimeout(() => {
                 document.querySelectorAll('.reveal:not(.active)').forEach(el => observer.observe(el));
-            }, 3800);
+            }, 3400);
         });
     </script>
 </body>
