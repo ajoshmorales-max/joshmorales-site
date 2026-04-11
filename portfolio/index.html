@@ -120,23 +120,18 @@
             margin-top: 0.25rem;
         }
 
-        .project-card h3 .nib-mark {
-            display: block;
-            height: 2.2rem;
-            width: auto;
-            margin: 0.1rem 0 0.15rem;
+        .project-card h3.nib-lockup {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: lowercase;
+            letter-spacing: -0.035em;
         }
 
-        .project-card .nib-sr {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
+        .project-card h3.nib-lockup .nib-mark {
+            height: 1.6rem;
+            width: auto;
+            flex-shrink: 0;
         }
 
         .project-card p {
@@ -242,13 +237,13 @@
                 <!-- Nib -->
                 <a href="/nib/" class="project-card reveal delay-1">
                     <div class="project-tag">Live</div>
-                    <h3>
-                        <span class="nib-sr">Nib</span>
-                        <svg class="nib-mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nib">
+                    <h3 class="nib-lockup">
+                        <svg class="nib-mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <polygon points="10,8 54,8 32,58" fill="#1A1A2E"/>
                             <rect x="30.5" y="18" width="3" height="28" fill="#0D9488"/>
                             <circle cx="32" cy="15" r="3.5" fill="#0D9488"/>
                         </svg>
+                        nib
                     </h3>
                     <p>Speak or type a rough idea. It asks a couple of clarifying questions, then writes you an optimized prompt you can paste straight into Claude, ChatGPT, or any other LLM.</p>
                     <div class="project-tech">
