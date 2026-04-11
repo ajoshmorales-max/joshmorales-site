@@ -178,6 +178,15 @@
             transform: translateX(2px);
         }
 
+        .inline-link {
+            color: var(--accent);
+            border-bottom: 1px solid rgba(13, 148, 136, 0.35);
+            transition: border-color 0.2s ease;
+        }
+        .inline-link:hover {
+            border-bottom-color: var(--accent);
+        }
+
         /* Footer */
         footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); }
         footer p { font-size: 0.85rem; color: var(--text-muted); }
@@ -235,7 +244,7 @@
             <div class="project-grid">
 
                 <!-- Nib -->
-                <a href="/nib/" class="project-card reveal delay-1">
+                <div class="project-card reveal delay-1">
                     <div class="project-tag">Live</div>
                     <h3 class="nib-lockup">
                         <svg class="nib-mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -245,15 +254,16 @@
                         </svg>
                         nib
                     </h3>
-                    <p>Speak or type a rough idea. It asks a couple of clarifying questions, then writes you an optimized prompt you can paste straight into Claude, ChatGPT, or any other LLM.</p>
+                    <p>Optimize prompts with the support of AI. Speak or type a rough idea. &ldquo;Nib&rdquo; agent will ask clarifying questions to expand on your intent and think through any parameters you might not have considered yet. Once all details are clear, the agent generates an optimized prompt you can paste straight into Claude, ChatGPT, or any other LLM. Unlimited free use available for existing clients.</p>
+                    <p>Click here to learn more on how AI-powered prompt optimization saves you time and improves AI-generated outputs: <a href="#" class="inline-link">Blog Placeholder</a></p>
                     <div class="project-tech">
                         <span>React</span>
                         <span>Claude Sonnet 4.6</span>
                         <span>Groq Whisper</span>
                         <span>Cloudflare Workers</span>
                     </div>
-                    <div class="project-link">Try it <span class="arrow">&rarr;</span></div>
-                </a>
+                    <a href="/nib/" class="project-link">Try it <span class="arrow">&rarr;</span></a>
+                </div>
 
                 <!-- Coming Soon 1 -->
                 <div class="project-card coming-soon reveal delay-2">
@@ -302,3 +312,4 @@
     </script>
 </body>
 </html>
+
