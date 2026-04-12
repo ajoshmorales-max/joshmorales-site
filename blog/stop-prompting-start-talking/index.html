@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stop Prompting. Start Talking. | Josh Morales</title>
+    <meta name="description" content="The AI got better at understanding you. That changes how you and your team should work with it — and makes most prompt engineering workshops obsolete.">
+    <meta property="og:title" content="Stop Prompting. Start Talking.">
+    <meta property="og:description" content="The AI got better at understanding you. That changes how you and your team should work with it.">
+    <meta property="og:type" content="article">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #FAFAFA;
+            --text-main: #1A1A2E;
+            --text-secondary: #555570;
+            --text-muted: #8B8B9E;
+            --accent: #0D9488;
+            --accent-light: #14B8A6;
+            --border: #E5E5EA;
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Manrope', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-weight: 400;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        ::selection { background: var(--accent); color: #fff; }
+        a { text-decoration: none; color: inherit; }
+        h1, h2, h3 { font-family: var(--font-heading); letter-spacing: -0.025em; line-height: 1.15; font-weight: 600; color: var(--text-main); }
+        h1 { font-size: clamp(2.2rem, 4.8vw, 3.6rem); letter-spacing: -0.03em; }
+        h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); margin-top: 2.5rem; margin-bottom: 1rem; }
+        p { font-size: clamp(1.05rem, 1.3vw, 1.2rem); color: var(--text-secondary); margin-bottom: 1.25rem; }
+        em { font-style: italic; color: var(--text-secondary); }
+        strong { color: var(--text-main); font-weight: 600; }
+        .container { width: 90%; max-width: 720px; margin: 0 auto; }
+        .container-wide { width: 90%; max-width: 900px; margin: 0 auto; }
+
+        nav { padding: 2rem 0; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-mark { font-family: var(--font-heading); font-size: 0.9rem; font-weight: 600; color: var(--accent); letter-spacing: -0.04em; }
+        .logo-text { display: flex; flex-direction: column; gap: 0.1rem; }
+        .logo-name { font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-main); }
+        .logo-tagline { font-family: var(--font-body); font-size: 0.55rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 400; }
+        .nav-right { display: flex; align-items: center; gap: 1rem; }
+        .nav-link { font-family: var(--font-heading); font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); transition: color 0.25s; }
+        .nav-link:hover { color: var(--accent); }
+        .nav-link.active { color: var(--text-main); }
+        .btn { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1.6rem; background: var(--accent); color: #fff; font-family: var(--font-heading); font-size: 0.9rem; font-weight: 500; border-radius: 8px; border: none; cursor: pointer; transition: background 0.25s ease, transform 0.25s ease; }
+        .btn:hover { background: var(--accent-light); transform: translateY(-1px); }
+
+        .article-header { padding: 6vh 0 2.5rem; }
+        .article-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            transition: color 0.25s, gap 0.25s;
+        }
+        .article-back:hover { color: var(--accent); gap: 0.6rem; }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            font-family: var(--font-heading);
+            font-size: 0.78rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+        .article-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-muted); }
+        .article-meta .tag { color: var(--accent); }
+
+        .article-header h1 { margin-bottom: 1.25rem; }
+        .article-subhead {
+            font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+            line-height: 1.55;
+            color: var(--text-secondary);
+            font-style: italic;
+            font-weight: 300;
+            max-width: 640px;
+        }
+
+        .article-body { padding-bottom: 4rem; }
+        .article-body h2 {
+            color: var(--text-main);
+        }
+        .article-body p:first-of-type::first-line {
+            font-weight: 500;
+        }
+
+        .pull {
+            border-left: 3px solid var(--accent);
+            padding: 0.25rem 0 0.25rem 1.25rem;
+            margin: 1.75rem 0;
+            font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+            font-style: italic;
+            color: var(--text-main);
+            line-height: 1.55;
+        }
+
+        .article-cta {
+            margin-top: 3.5rem;
+            padding: 2.25rem;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            text-align: center;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .article-cta:hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 30px rgba(13, 148, 136, 0.08);
+        }
+        .article-cta h3 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .article-cta p {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            background: var(--accent);
+            padding: 0.85rem 1.75rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
+            transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease, gap 0.25s ease;
+        }
+        .cta-button:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.35);
+            gap: 0.8rem;
+        }
+
+        .divider { height: 1px; width: 100%; background: var(--border); margin: 3rem auto; max-width: 720px; }
+
+        footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); }
+        footer p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            nav { padding: 1.25rem 0; }
+            .nav-right { gap: 0.75rem; }
+            .article-header { padding: 4vh 0 2rem; }
+            .article-cta { padding: 1.75rem 1.25rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1; transform: none; transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-wide">
+        <nav>
+            <a href="/" class="logo">
+                <div class="logo-mark">JM</div>
+                <div class="logo-text">
+                    <div class="logo-name">Josh Morales</div>
+                    <div class="logo-tagline">AI Implementation</div>
+                </div>
+            </a>
+            <div class="nav-right">
+                <a href="/portfolio/" class="nav-link">Portfolio</a>
+                <a href="/blog/" class="nav-link active">Blog</a>
+                <a href="https://cal.com/joshmorales-ai" class="btn">Book a Call</a>
+            </div>
+        </nav>
+    </div>
+
+    <article>
+        <div class="container">
+            <header class="article-header">
+                <a href="/blog/" class="article-back"><span>&larr;</span> All notes</a>
+                <div class="article-meta">
+                    <span class="tag">Prompt Engineering</span>
+                    <span class="dot"></span>
+                    <span>April 11, 2026</span>
+                    <span class="dot"></span>
+                    <span>4 min read</span>
+                </div>
+                <h1>Stop Prompting. Start Talking.</h1>
+                <p class="article-subhead">The AI got better at understanding you. That changes how you and your team should work with it.</p>
+            </header>
+
+            <div class="article-body">
+                <p>You don&rsquo;t need to get better at <em>prompting</em> AI. You just need to get more comfortable <em>talking</em> to it.</p>
+
+                <p>A small caveat before the argument: prompting has not vanished. Specifically for complex production work (agents, pipelines, anything running at scale), specificity pays off, and the vendors publish active guides that say so.</p>
+
+                <p>The issue is, the human methods your team is being sold in two-hour workshops as &ldquo;foundational skills&rdquo; &mdash; persona tricks, &ldquo;act as a senior analyst,&rdquo; XML scaffolding, emphasis markers &mdash; all of these rituals are better off applied by the AI itself (read about <a href="https://intuitionlabs.ai/articles/meta-prompting-llm-self-optimization" target="_blank" rel="noopener" style="color: var(--accent); border-bottom: 1px solid rgba(13, 148, 136, 0.35);"><em>meta-prompting</em></a>, a technique where an LLM generates or refines the instructions for another model).</p>
+
+                <p>Treating manual prompting as a &ldquo;foundational&rdquo; human skill in 2026 is essentially theater.</p>
+
+                <h2>Two things that changed</h2>
+
+                <p>Current AI can now do two things that make manual methods much less useful than they used to be.</p>
+
+                <p>First, AI models can now actually figure out what you mean from rough, imperfect language. You no longer have to say &ldquo;Act as a senior analyst with fifteen years of experience and summarize the following report in five bullet points for an executive audience.&rdquo; You can say &ldquo;give me the gist of this for my boss,&rdquo; and the model will understand you.</p>
+
+                <p>Second, and most overlooked: AI systems can now be told to &ldquo;think about how they should be instructed,&rdquo; which can lead to more efficient and robust solutions. This removes the cognitive load off of the user, yet allows for plans and ideas to be sharpened significantly by removing ambiguities.</p>
+
+                <p class="pull">I call this cognitive <strong>amplification</strong>: when a tool sharpens your thinking by asking the questions you would have asked yourself <em>if you had more time to think</em>.</p>
+
+                <p>The real question is no longer &ldquo;how do I write a better prompt?&rdquo; It is &ldquo;how should I actually be working with AI?&rdquo;</p>
+
+                <h2>The interview is the upgrade</h2>
+
+                <p>A search bar gives you a result shaped by the question you typed. An <strong>interviewing</strong> tool gives you a result shaped by the question you would have typed <em>if you had thought about it for an hour</em>.</p>
+
+                <p>Engaging with AI this way can feel uncomfortable at first. People expect AI to be fast, and an interview feels slower than a search bar. But it is slower the same way a good consultant is slower than Google: you wait a little longer and walk away with a better version of your own idea than the one you came in with.</p>
+
+                <p>Nobody complains that their consultant asked them clarifying questions. They complain when a consultant charges them for work based on a half-formed brief. AI is no different.</p>
+
+                <p>An AI agent that is specifically optimized to run a clean interview and then hands the result off to a fresh execution step is a must-have in 2026, to help keep the execution step from drowning in chat history and to take a first step in achieving cognitive amplification with AI. This is the core thesis for Nib agent.</p>
+
+                <h2>The short version</h2>
+
+                <p>Stop trying to write better prompts. Talk to AI plainly, talk to it messy. Let the AI interview you and let it do the cognitive work that will save you hours of trial-and-error for better AI outputs.</p>
+
+                <p>You already know how to be interviewed. The only new skill is letting the machine do the asking.</p>
+
+                <div class="article-cta">
+                    <h3>Try Nib</h3>
+                    <p>An interviewing prompt agent built on this thesis. Speak or type a rough idea — Nib asks the questions, then writes the optimized prompt.</p>
+                    <a href="/nib/" class="cta-button">Open Nib <span>&rarr;</span></a>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <footer>
+        <div class="container-wide">
+            <p>&copy; 2026 Josh Morales</p>
+        </div>
+    </footer>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+
+</body>
+</html>
