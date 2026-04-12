@@ -186,13 +186,31 @@
             transform: translateX(3px);
         }
 
-        .inline-link {
-            color: var(--accent);
-            border-bottom: 1px solid rgba(13, 148, 136, 0.35);
-            transition: border-color 0.2s ease;
+        .project-meta-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.15rem;
+            width: fit-content;
+            transition: color 0.2s ease, border-color 0.2s ease, gap 0.2s ease;
         }
-        .inline-link:hover {
+        .project-meta-link em {
+            font-style: italic;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
+        }
+        .project-meta-link:hover {
+            color: var(--accent);
             border-bottom-color: var(--accent);
+            gap: 0.5rem;
+        }
+        .project-meta-link:hover em {
+            color: var(--accent);
         }
 
         /* Footer */
@@ -237,6 +255,7 @@
             </a>
             <div class="nav-right">
                 <a href="/portfolio/" class="nav-link" style="color: var(--text-main);">Portfolio</a>
+                <a href="/blog/" class="nav-link">Blog</a>
                 <a href="https://cal.com/joshmorales-ai" class="btn">Book a Call</a>
             </div>
         </nav>
@@ -263,7 +282,7 @@
                         nib
                     </h3>
                     <p>Optimize prompts with the support of AI. Speak or type a rough idea. &ldquo;Nib&rdquo; agent will ask clarifying questions to expand on your intent and think through any parameters you might not have considered yet. Once all details are clear, the agent generates an optimized prompt you can paste straight into Claude, ChatGPT, or any other LLM. Unlimited free use available for existing clients.</p>
-                    <p>Click here to learn more on how AI-powered prompt optimization saves you time and improves AI-generated outputs: <a href="#" class="inline-link">Blog Placeholder</a></p>
+                    <a href="/blog/stop-prompting-start-talking/" class="project-meta-link">Read: <em>Stop Prompting. Start Talking.</em> <span>&rarr;</span></a>
                     <div class="project-tech">
                         <span>React</span>
                         <span>Claude Sonnet 4.6</span>
@@ -320,4 +339,5 @@
     </script>
 </body>
 </html>
+
 
