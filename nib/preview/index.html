@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nib — UX Preview</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Preview of the upcoming Nib UX redesign.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EDEEEC;
+    --paper: #F6F7F4;
+    --text-main: #1E1C1A;
+    --text-secondary: #55504A;
+    --text-muted: #8E877E;
+    --accent: #0D9488;
+    --accent-light: #14B8A6;
+    --border: #D6D8D3;
+
+    --font-display: 'Iowan Old Style', 'Hoefler Text', 'Apple Garamond', Georgia, 'Times New Roman', serif;
+    --font-ui: 'Iowan Old Style', 'Hoefler Text', 'Apple Garamond', Georgia, 'Times New Roman', serif;
+    --font-mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  header {
+    padding: 1.25rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-size: 2.3rem;
+    font-weight: 500;
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+    letter-spacing: -0.03em;
+    color: var(--text-main);
+  }
+  .logo-wordmark { display: inline-block; }
+  .logo-mascot {
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    margin-left: 3px;
+    position: relative;
+    top: 3px;
+  }
+  .logo-mascot .lm-body {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: logo-squish 3.2s ease-in-out infinite;
+  }
+  .logo-mascot .lm-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: logo-blink 5.5s ease-in-out infinite;
+  }
+  @keyframes logo-squish {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    50% { transform: scaleY(1.02) translateY(-1px); }
+  }
+  @keyframes logo-blink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    93%, 96% { transform: scaleY(0.1); }
+  }
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+  .btn-host-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.5rem 0.875rem;
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+  }
+  .btn-host-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Info button + tooltip */
+  .info-wrap { position: relative; }
+  .btn-info {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .btn-info:hover { border-color: var(--accent); color: var(--accent); }
+  .info-tooltip {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 300px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 50;
+  }
+  .info-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 12px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    transform: rotate(45deg);
+  }
+  .info-wrap:hover .info-tooltip,
+  .info-wrap:focus-within .info-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .info-tooltip strong {
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 2rem 8rem;
+    position: relative;
+  }
+  .stage {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stage-prompt {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2.4rem;
+    letter-spacing: -0.015em;
+    color: var(--text-main);
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 0.5rem;
+  }
+
+  .mic-button {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 8px 32px rgba(13, 148, 136, 0.3);
+    position: relative;
+  }
+  .mic-button svg { width: 52px; height: 52px; }
+  .mic-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(13, 148, 136, 0.4);
+  }
+  .mic-button.listening {
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .mic-button.listening::before {
+    content: '';
+    position: absolute;
+    inset: -16px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    opacity: 0.5;
+    animation: ripple 1.6s ease-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.3); opacity: 0; }
+  }
+
+  .mic-label {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .waveform {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 48px;
+  }
+  .waveform span {
+    display: block;
+    width: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: wave 1s ease-in-out infinite;
+  }
+  .waveform span:nth-child(1) { animation-delay: 0.0s; }
+  .waveform span:nth-child(2) { animation-delay: 0.1s; }
+  .waveform span:nth-child(3) { animation-delay: 0.2s; }
+  .waveform span:nth-child(4) { animation-delay: 0.3s; }
+  .waveform span:nth-child(5) { animation-delay: 0.4s; }
+  .waveform span:nth-child(6) { animation-delay: 0.5s; }
+  .waveform span:nth-child(7) { animation-delay: 0.4s; }
+  .waveform span:nth-child(8) { animation-delay: 0.3s; }
+  .waveform span:nth-child(9) { animation-delay: 0.2s; }
+  .waveform span:nth-child(10) { animation-delay: 0.1s; }
+  @keyframes wave {
+    0%, 100% { height: 8px; }
+    50% { height: 42px; }
+  }
+
+  .transcript-live {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 520px;
+    text-align: center;
+    min-height: 2rem;
+    line-height: 1.5;
+  }
+
+  .said-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--font-ui);
+    font-weight: 400;
+  }
+  .said-text {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--text-main);
+    max-width: 520px;
+    text-align: center;
+    font-style: normal;
+    line-height: 1.35;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+
+  .thinking-dots {
+    display: flex;
+    gap: 10px;
+    margin-top: 0.5rem;
+  }
+  .thinking-dots span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: thinking 1.4s ease-in-out infinite;
+  }
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes thinking {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  .prompt-card-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-ui);
+  }
+  .prompt-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--text-main);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: var(--paper);
+    border: 1px solid rgba(30, 28, 26, 0.1);
+    border-radius: 4px;
+    padding: 1.2rem 1.4rem;
+    margin: 0;
+    cursor: text;
+    outline: none;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .prompt-card pre:hover {
+    background: #FBF7EA;
+    border-color: rgba(30, 28, 26, 0.16);
+  }
+  .prompt-card pre:focus {
+    background: white;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08);
+  }
+
+  /* Collapsible preview wrapper — compact by default, expands on click */
+  .prompt-preview {
+    position: relative;
+    max-height: 110px;
+    overflow: hidden;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .prompt-preview::after {
+    content: 'Tap to expand & edit ↓';
+    position: absolute;
+    left: 1px; right: 1px; bottom: 1px;
+    padding: 2rem 0 0.7rem;
+    background: linear-gradient(to bottom, rgba(246, 247, 244, 0) 0%, var(--paper) 70%);
+    border-radius: 0 0 4px 4px;
+    text-align: center;
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .prompt-preview:hover::after { color: var(--accent); }
+  .prompt-preview.expanded {
+    max-height: 520px;
+    overflow-y: auto;
+    cursor: text;
+  }
+  .prompt-preview.expanded::after { opacity: 0; }
+  .prompt-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem 1.5rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
+  .btn-primary.copied {
+    background: #0F766E;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18);
+  }
+  .btn-secondary {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1.25rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Bottom fallback bar */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 2rem 1.75rem;
+    background: linear-gradient(to top, var(--bg) 70%, rgba(237, 238, 236, 0));
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .bottom-bar-inner {
+    display: flex;
+    gap: 0.6rem;
+    max-width: 540px;
+    width: 100%;
+    pointer-events: auto;
+  }
+  .mini-input {
+    flex: 1;
+    padding: 0.85rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    background: var(--paper);
+    color: var(--text-main);
+  }
+  .mini-input::placeholder { color: var(--text-muted); }
+  .mini-input:focus { outline: none; border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08); }
+  .mic-mini {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .mic-mini:hover { border-color: var(--accent); background: var(--accent); color: white; }
+  .mic-mini svg { width: 20px; height: 20px; }
+
+  /* Stage indicator chip */
+  .state-indicator {
+    position: fixed;
+    top: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.35rem 0.875rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .state-indicator strong {
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-left: 0.25rem;
+  }
+
+  /* Dev controls (draft-only — would not ship) */
+  .dev-controls {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #1A1A2E;
+    color: white;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    opacity: 0.94;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 100;
+  }
+  .dev-controls strong {
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    opacity: 0.6;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+  .dev-controls button {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .dev-controls button:hover { background: rgba(255,255,255,0.1); }
+  .dev-controls .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+    margin: 0.3rem 0;
+  }
+
+  /* Editable transcript card (review stage) */
+  /* ============================================================
+     Content blocks — no cards, no containers.
+     The text IS the UI. Use whitespace + hairlines, not boxes.
+     ============================================================ */
+  .transcript-card,
+  .interview-card,
+  .prompt-card {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  /* Transcript — clear writing surface, not a form field */
+  .transcript-card-label { display: none; }
+  .transcript-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+  }
+  .transcript-hint svg { width: 14px; height: 14px; }
+  .transcript-editable {
+    width: 100%;
+    min-height: 100px;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+    color: var(--text-main);
+    background: var(--paper);
+    border: 1px solid rgba(30, 28, 26, 0.1);
+    border-radius: 4px;
+    padding: 1.2rem 1.4rem;
+    resize: none;
+    margin-bottom: 1.25rem;
+    cursor: text;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .transcript-editable:hover {
+    background: #FBF7EA;
+    border-color: rgba(30, 28, 26, 0.16);
+  }
+  .transcript-editable:focus {
+    outline: none;
+    background: white;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08);
+  }
+
+  /* Interview */
+  .interview-progress {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 0.3rem;
+    font-family: var(--font-ui);
+  }
+  .interview-label { display: none; }
+  .interview-question {
+    font-family: var(--font-display);
+    font-size: 1.85rem;
+    font-weight: 400;
+    color: var(--text-main);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    margin-bottom: 2rem;
+  }
+  .interview-answer-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .interview-input {
+    flex: 1;
+    padding: 0.6rem 0;
+    border: none;
+    border-radius: 0;
+    font-family: var(--font-ui);
+    font-size: 1.05rem;
+    font-weight: 400;
+    background: transparent;
+    color: var(--text-main);
+  }
+  .interview-input::placeholder { color: var(--text-muted); }
+  .interview-input:focus { outline: none; box-shadow: none; }
+  .interview-mic {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.15s;
+    position: relative;
+  }
+  .interview-mic:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(1.05);
+  }
+  .interview-mic svg { width: 18px; height: 18px; }
+
+  /* Active-recording state — pulsing teal button with ring emanation */
+  .interview-mic.recording {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    animation: mic-pulse 1.4s ease-in-out infinite;
+  }
+  .interview-mic.recording::before,
+  .interview-mic.recording::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 2px solid rgba(20, 184, 166, 0.5);
+    animation: mic-ring-out 1.6s ease-out infinite;
+    pointer-events: none;
+  }
+  .interview-mic.recording::after { animation-delay: 0.8s; }
+  @keyframes mic-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.35); }
+    50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(13, 148, 136, 0); }
+  }
+  @keyframes mic-ring-out {
+    0% { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(1.7); opacity: 0; }
+  }
+
+  /* Interview-listening label */
+  .interview-listening-hint {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-top: 0.75rem;
+  }
+  .interview-listening-hint.visible { display: inline-flex; }
+  .interview-listening-hint::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: mic-dot-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes mic-dot-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  .interview-skip {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 0.4rem 0;
+    text-decoration: none;
+  }
+  .interview-skip:hover { color: var(--text-main); }
+
+  /* Outlined buttons — clear affordance, minimal chrome */
+  .btn-text {
+    background: transparent;
+    border: 1px solid rgba(26, 26, 46, 0.18);
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 0.7rem 1.35rem;
+    border-radius: 8px;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    line-height: 1;
+  }
+  .btn-text:hover {
+    border-color: var(--text-main);
+    background: rgba(26, 26, 46, 0.04);
+  }
+  .btn-text.primary {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(13, 148, 136, 0.05);
+  }
+  .btn-text.primary:hover {
+    background: rgba(13, 148, 136, 0.1);
+    border-color: var(--accent-light);
+    color: var(--accent-light);
+  }
+  .btn-text .arrow { transition: transform 0.15s; display: inline-block; }
+  .btn-text.primary:hover .arrow { transform: translateX(3px); }
+  .btn-text.copied {
+    color: var(--accent);
+    border-color: rgba(13, 148, 136, 0.3);
+    background: rgba(13, 148, 136, 0.08);
+    pointer-events: none;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Background color picker (dev-only chrome) */
+  .bg-picker {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem 0.85rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .bg-picker-label {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+  }
+  .bg-swatches { display: flex; gap: 0.45rem; }
+  .bg-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid white;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .bg-swatch:hover { transform: scale(1.12); }
+  .bg-swatch.active {
+    box-shadow: 0 0 0 2px var(--text-main);
+    transform: scale(1.08);
+  }
+  .bg-swatch::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+  }
+  .bg-swatch:hover::after { opacity: 1; }
+
+  /* Audio primer overlay */
+  .primer {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 26, 46, 0.94);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    cursor: pointer;
+  }
+  .primer-inner {
+    text-align: center;
+    color: white;
+    max-width: 420px;
+    padding: 2rem;
+  }
+  .primer-inner h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2.1rem;
+    letter-spacing: -0.015em;
+    margin-bottom: 0.75rem;
+  }
+  .primer-inner p {
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+  .primer-inner .btn-primary {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    flex: none;
+  }
+
+  /* ============================================================
+     MASCOT — hero and corner modes, across all stages
+     ============================================================ */
+  .mascot-stage {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0 auto;
+  }
+  .mascot-halo {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.2) 0%, transparent 60%);
+    opacity: 0.7;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 0;
+  }
+  .mascot-body-wrap {
+    width: 160px;
+    height: 160px;
+    position: relative;
+    z-index: 1;
+    transform-origin: center bottom;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .mascot-stage:hover .mascot-body-wrap { transform: scale(1.04); }
+  .mascot-stage:active .mascot-body-wrap { transform: scale(0.96); }
+  .mascot-svg { width: 100%; height: 100%; display: block; }
+
+  /* Idle */
+  .mascot-stage.state-idle .mascot-svg        { animation: m-float 3.2s ease-in-out infinite; }
+  .mascot-stage.state-idle .m-body            { transform-box: fill-box; transform-origin: center bottom; animation: m-squish 3.2s ease-in-out infinite; }
+  .mascot-stage.state-idle .m-eye             { transform-box: fill-box; transform-origin: center; animation: m-blink 5.5s ease-in-out infinite; }
+  .mascot-stage.state-idle .m-shadow          { transform-box: fill-box; transform-origin: center; animation: m-shadow 3.2s ease-in-out infinite; }
+  .mascot-stage.state-idle .mascot-halo       { animation: m-halo-breathe 3.2s ease-in-out infinite; }
+
+  @keyframes m-float   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes m-squish  { 0%, 100% { transform: scaleY(1) scaleX(1); } 50% { transform: scaleY(1.02) scaleX(0.98); } }
+  @keyframes m-shadow  { 0%, 100% { transform: scaleX(1); opacity: 0.25; } 50% { transform: scaleX(0.75); opacity: 0.15; } }
+  @keyframes m-blink   { 0%, 88%, 100% { transform: scaleY(1); } 91%, 94% { transform: scaleY(0.08); } }
+  @keyframes m-halo-breathe { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.08); } }
+
+  /* Listening */
+  .mascot-stage.state-listening .mascot-svg { animation: m-listen-pulse 1s ease-in-out infinite; }
+  .mascot-stage.state-listening .m-body     { transform-box: fill-box; transform-origin: center bottom; animation: m-listen-squish 1s ease-in-out infinite; }
+  .mascot-stage.state-listening .m-eye      { transform-box: fill-box; transform-origin: center; transform: scaleY(0.08); transition: transform 0.2s; }
+  .mascot-stage.state-listening .mascot-halo {
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.4) 0%, transparent 60%);
+    opacity: 1;
+    animation: m-halo-listen 1s ease-in-out infinite;
+  }
+  @keyframes m-listen-pulse  { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.02); } }
+  @keyframes m-listen-squish { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.98); } }
+  @keyframes m-halo-listen   { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.25); opacity: 0.9; } }
+
+  /* Waveform rings (listening) */
+  .m-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(20, 184, 166, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .mascot-stage.state-listening .m-ring        { animation: m-ring-out 1.6s ease-out infinite; }
+  .mascot-stage.state-listening .m-ring.r2     { animation-delay: 0.8s; }
+  @keyframes m-ring-out { 0% { transform: scale(0.85); opacity: 0.7; } 100% { transform: scale(1.6); opacity: 0; } }
+
+  /* Thinking */
+  .mascot-stage.state-thinking .mascot-svg { animation: m-think-tilt 2s ease-in-out infinite; }
+  .mascot-stage.state-thinking .m-eye      { transform-box: fill-box; transform-origin: center; transform: translateY(-2px); transition: transform 0.3s; }
+  .mascot-stage.state-thinking .m-mouth    { transform-box: fill-box; transform-origin: center; transform: scale(0.6) translateY(-1px); transition: transform 0.3s; }
+  .mascot-stage.state-thinking .mascot-halo {
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, transparent 60%);
+    opacity: 0.45;
+  }
+  @keyframes m-think-tilt { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+
+  .m-dots {
+    position: absolute;
+    top: 8px;
+    right: 42px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 2;
+  }
+  .mascot-stage.state-thinking .m-dots { opacity: 1; transform: scale(1); }
+  .m-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #E0A458;
+    animation: m-dot-bounce 1.2s ease-in-out infinite;
+  }
+  .m-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .m-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes m-dot-bounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.5; } 40% { transform: translateY(-4px); opacity: 1; } }
+
+  /* Delivered — happy, eager, ready to keep helping */
+  .mascot-stage.state-delivered .mascot-body-wrap {
+    transform-origin: center bottom;
+    animation:
+      m-deliver-entry 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+      m-happy-bob 2.6s ease-in-out 0.7s infinite,
+      m-happy-jump 4.5s ease-in-out 1.3s infinite;
+  }
+  .mascot-stage.state-delivered .mascot-svg {
+    animation: m-happy-tilt 3.6s ease-in-out infinite;
+    transform-origin: center bottom;
+  }
+  .mascot-stage.state-delivered .m-mouth {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: m-happy-smile 2.6s ease-in-out infinite;
+  }
+  .mascot-stage.state-delivered .m-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: m-happy-wink 5s ease-in-out infinite;
+  }
+  .mascot-stage.state-delivered .mascot-halo {
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.4) 0%, transparent 60%);
+    opacity: 1;
+    animation: m-happy-halo 2.6s ease-in-out infinite;
+  }
+  @keyframes m-deliver-entry {
+    0%   { transform: scale(0.5) translateY(20px); opacity: 0; }
+    55%  { transform: scale(1.18, 0.88) translateY(-10px); opacity: 1; }
+    75%  { transform: scale(0.94, 1.08) translateY(0); }
+    100% { transform: scale(1) translateY(0); }
+  }
+  @keyframes m-happy-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  @keyframes m-happy-jump {
+    0%, 78%, 100% { transform: translateY(0) scaleY(1); }
+    84%           { transform: translateY(-9px) scaleY(1.05); }
+    90%           { transform: translateY(0) scaleY(0.95); }
+    94%           { transform: translateY(0) scaleY(1.02); }
+  }
+  @keyframes m-happy-tilt {
+    0%, 100% { transform: rotate(0); }
+    25%      { transform: rotate(-3deg); }
+    75%      { transform: rotate(3deg); }
+  }
+  @keyframes m-happy-smile {
+    0%, 100% { transform: scale(1.18) translateY(1px); }
+    50%      { transform: scale(1.28) translateY(2px); }
+  }
+  @keyframes m-happy-wink {
+    0%, 18%, 22%, 100% { transform: scaleY(1); }
+    20%                { transform: scaleY(0.1); }
+  }
+  @keyframes m-happy-halo {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50%      { opacity: 1; transform: scale(1.12); }
+  }
+
+  /* Sparkle particles around the happy mascot */
+  .mascot-sparkle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 3;
+    color: var(--accent);
+  }
+  .mascot-sparkle svg { width: 100%; height: 100%; display: block; }
+  .mascot-stage.state-delivered .mascot-sparkle {
+    animation: m-sparkle-float 3s ease-out infinite;
+  }
+  .mascot-stage.state-delivered .mascot-sparkle.s1 { top: 10%;  left: -10%; animation-delay: 1.0s; }
+  .mascot-stage.state-delivered .mascot-sparkle.s2 { top: -8%;  right: 8%;  animation-delay: 1.9s; }
+  .mascot-stage.state-delivered .mascot-sparkle.s3 { top: 24%;  right: -10%; animation-delay: 2.7s; }
+  @keyframes m-sparkle-float {
+    0%   { opacity: 0; transform: scale(0.4) translateY(2px) rotate(0); }
+    20%  { opacity: 1; transform: scale(1) translateY(-4px) rotate(45deg); }
+    60%  { opacity: 0.7; transform: scale(0.9) translateY(-14px) rotate(120deg); }
+    100% { opacity: 0; transform: scale(0.3) translateY(-22px) rotate(180deg); }
+  }
+  /* Slightly larger sparkles on the hero-size mascot (rare for delivered, but works) */
+  .mascot-stage:not(.corner) .mascot-sparkle { width: 16px; height: 16px; }
+
+  /* ===== Corner variant — small, sits above a card ===== */
+  .mascot-stage.corner {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 0.75rem;
+    cursor: default;
+  }
+  .mascot-stage.corner .mascot-body-wrap { width: 60px; height: 60px; }
+  .mascot-stage.corner:hover .mascot-body-wrap { transform: none; }
+  .mascot-stage.corner .mascot-halo {
+    background: radial-gradient(circle, rgba(224, 164, 88, 0.18) 0%, transparent 60%);
+    opacity: 0.7;
+  }
+  .mascot-stage.corner .m-dots { top: 2px; right: 12px; }
+  .mascot-stage.corner .m-dots span { width: 5px; height: 5px; }
+  /* Corner listening state — closed eyes, pulsing teal halo */
+  .mascot-stage.corner.state-listening .mascot-halo {
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.45) 0%, transparent 60%);
+    opacity: 1;
+    animation: m-halo-listen 1s ease-in-out infinite;
+  }
+  .mascot-stage.corner.state-listening .m-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scaleY(0.08);
+  }
+  .mascot-stage.corner.state-listening .mascot-svg {
+    animation: m-listen-pulse 1s ease-in-out infinite;
+  }
+
+  /* ============================================================
+     Mobile adjustments
+     ============================================================ */
+  @media (max-width: 680px) {
+    header { padding: 1rem 1.1rem; }
+    .logo { font-size: 1.75rem; }
+    .logo-mascot { width: 19px; height: 19px; top: 2px; }
+    .header-right { gap: 0.5rem; }
+    .btn-info { width: 28px; height: 28px; font-size: 0.85rem; }
+    .btn-host-toggle { font-size: 0.72rem; padding: 0.4rem 0.6rem; }
+    .info-tooltip { width: 260px; right: -4px; }
+    .state-indicator { display: none !important; }
+    /* Keep dev-controls visible at mobile widths so we can still scrub during preview */
+
+    main { padding: 1.25rem 1rem 5.5rem; }
+    .stage-prompt { font-size: 1.65rem; margin-bottom: 1.25rem; }
+
+    /* Shrink the hero mascot on small screens */
+    .mascot-stage { width: 180px; height: 180px; }
+    .mascot-stage .mascot-body-wrap { width: 130px; height: 130px; }
+    .mascot-stage.corner { width: 60px; height: 60px; margin-bottom: 0.6rem; }
+    .mascot-stage.corner .mascot-body-wrap { width: 52px; height: 52px; }
+
+    .transcript-editable { font-size: 1.25rem; padding: 1rem 1.1rem; }
+    .transcript-hint { font-size: 0.8rem; }
+    .interview-question { font-size: 1.35rem; }
+    .prompt-card pre { font-size: 0.78rem; padding-left: 1rem; }
+    .interview-answer-row { gap: 0.5rem; }
+    .action-row, .prompt-actions { gap: 0.5rem; }
+    .btn-text { padding: 0.65rem 1.1rem; font-size: 0.9rem; }
+
+    .bottom-bar { padding: 0.75rem 1rem 1.1rem; }
+    .bottom-bar-inner { max-width: 100%; gap: 0.4rem; }
+
+    .primer-inner { padding: 1.5rem; max-width: 90%; }
+    .primer-inner h2 { font-size: 1.4rem; }
+    .primer-inner p { font-size: 0.9rem; }
+  }
+
+  /* Claude mascot + attribution (fixed bottom-left badge) */
+  .attribution {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.9rem 0.45rem 0.55rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(26, 26, 46, 0.06);
+    z-index: 40;
+  }
+  .attribution-text {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .attribution-text b {
+    color: var(--text-main);
+    font-weight: 500;
+  }
+  @media (max-width: 680px) {
+    .attribution { display: none; }
+  }
+  .claude-mascot {
+    width: 32px;
+    height: 32px;
+    display: block;
+    animation: mascot-float 3.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .claude-mascot .mascot-body {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: mascot-squish 3.2s ease-in-out infinite;
+  }
+  .claude-mascot .mascot-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: mascot-blink 5.5s ease-in-out infinite;
+  }
+  .claude-mascot .mascot-shadow {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: mascot-shadow 3.2s ease-in-out infinite;
+  }
+  @keyframes mascot-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  @keyframes mascot-squish {
+    0%, 100% { transform: scaleY(1) scaleX(1); }
+    50% { transform: scaleY(1.02) scaleX(0.98); }
+  }
+  @keyframes mascot-shadow {
+    0%, 100% { transform: scaleX(1); opacity: 0.35; }
+    50% { transform: scaleX(0.75); opacity: 0.22; }
+  }
+  @keyframes mascot-blink {
+    0%, 88%, 100% { transform: scaleY(1); }
+    91%, 94% { transform: scaleY(0.08); }
+  }
+
+  /* Preview banner — fixed top-right ribbon so visitors know this isn't live */
+  .preview-banner {
+    position: fixed;
+    top: 0.85rem;
+    right: 0.9rem;
+    z-index: 60;
+    background: var(--paper);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem;
+    font-family: var(--font-ui);
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .preview-banner span { color: var(--text-muted); font-size: 0.72rem; }
+  .preview-banner a { color: var(--accent); text-decoration: none; }
+  .preview-banner a:hover { color: var(--accent-light); text-decoration: underline; }
+  @media (max-width: 680px) {
+    .preview-banner { top: 0.5rem; right: 0.5rem; padding: 0.35rem 0.7rem; font-size: 0.7rem; }
+    .preview-banner span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="primer" id="primer">
+  <div class="primer-inner">
+    <h2>Nib — redesign draft</h2>
+    <p>Voice-first prototype with a narrator ("host") that talks you through each stage. Tap enter to unlock audio and start the experience.</p>
+    <button class="btn-primary" onclick="startExperience()">Enter draft</button>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <span class="logo-wordmark">nib</span>
+    <svg class="logo-mascot" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g class="lm-body">
+        <path d="M16 28 Q16 12 30 12 Q44 12 44 28 L44 38 Q44 50 30 50 Q16 50 16 38 Z" fill="#E0A458"/>
+        <ellipse cx="23" cy="21" rx="5" ry="3" fill="rgba(255,255,255,0.3)"/>
+        <circle class="lm-eye" cx="24" cy="30" r="2.4" fill="#1A1A2E"/>
+        <circle class="lm-eye" cx="36" cy="30" r="2.4" fill="#1A1A2E"/>
+        <path d="M25 37 Q30 40 35 37" stroke="#1A1A2E" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+  <div class="header-right">
+    <div class="info-wrap" tabindex="0">
+      <button class="btn-info" aria-label="What is Nib?">?</button>
+      <div class="info-tooltip">
+        <strong>What is Nib?</strong>
+        Nib turns your raw idea into a ready-to-use AI prompt. Describe what you want an AI to do — in your own words — and Nib shapes it into a structured prompt you can paste into Claude, ChatGPT, Midjourney, or any other model.
+      </div>
+    </div>
+    <button class="btn-host-toggle" id="hostToggle">
+      <span id="hostIcon">🔊</span>
+      <span id="hostLabel">Host voice: on</span>
+    </button>
+  </div>
+</header>
+
+
+<main>
+  <!-- IDLE -->
+  <div class="stage" id="stageIdle">
+    <h1 class="stage-prompt">What do you want AI to do?</h1>
+    <div class="mascot-stage state-idle" onclick="goListening()" aria-label="Tap to speak">
+      <div class="mascot-halo"></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle cx="32" cy="39" r="1" fill="white" opacity="0.9"/>
+            <circle cx="50" cy="39" r="1" fill="white" opacity="0.9"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="mic-label">Tap Nib to speak · or type below</div>
+  </div>
+
+  <!-- LISTENING -->
+  <div class="stage hidden" id="stageListening">
+    <h1 class="stage-prompt">Listening…</h1>
+    <div class="mascot-stage state-listening" onclick="goReview()" aria-label="Tap to stop">
+      <div class="mascot-halo"></div>
+      <div class="m-ring"></div>
+      <div class="m-ring r2"></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="transcript-live" id="liveTranscript">"I want to write a blog post about how to use RAG in production…"</div>
+  </div>
+
+  <!-- REVIEW -->
+  <div class="stage hidden" id="stageReview">
+    <div class="mascot-stage corner state-idle" aria-hidden="true">
+      <div class="mascot-halo"></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <h1 class="stage-prompt">Any edits?</h1>
+    <div class="transcript-card">
+      <label class="transcript-hint" for="transcriptEdit">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Tap the text below to edit
+      </label>
+      <textarea class="transcript-editable" id="transcriptEdit">I want to write a blog post about how to use RAG in production</textarea>
+      <div class="action-row">
+        <button class="btn-text primary" onclick="goInterview()">Looks good <span class="arrow">→</span></button>
+        <button class="btn-text" onclick="goListening()">Re-record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERVIEW -->
+  <div class="stage hidden" id="stageInterview">
+    <div class="mascot-stage corner state-idle" aria-hidden="true">
+      <div class="mascot-halo"></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="interview-card">
+      <div class="interview-progress" id="interviewProgress">Question 1 of 1</div>
+      <div class="interview-question" id="interviewQuestion">Who's the audience — engineers actively building RAG systems, or decision-makers trying to understand the tradeoffs?</div>
+      <div class="interview-answer-row">
+        <input type="text" class="interview-input" id="interviewAnswer" placeholder="Type your answer, or just speak">
+        <button class="interview-mic" id="interviewMic" onclick="toggleInterviewListening()" aria-label="Tap to stop listening">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <div class="interview-listening-hint" id="interviewListening">Listening — speak your answer, or type instead</div>
+      <div class="action-row" style="justify-content: space-between; align-items: center; margin-top: 1.25rem;">
+        <button class="btn-text" onclick="goThinking()">Skip</button>
+        <button class="btn-text primary" onclick="submitInterviewAnswer()">Send <span class="arrow">→</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- THINKING -->
+  <div class="stage hidden" id="stageThinking">
+    <div class="said-label">You said</div>
+    <div class="said-text">"I want to write a blog post about how to use RAG in production"</div>
+    <div class="mascot-stage state-thinking" aria-hidden="true">
+      <div class="mascot-halo"></div>
+      <div class="m-dots"><span></span><span></span><span></span></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="mic-label">Nib is writing your prompt</div>
+  </div>
+
+  <!-- DELIVERED -->
+  <div class="stage hidden" id="stageDelivered">
+    <div class="mascot-stage corner state-delivered" aria-hidden="true">
+      <div class="mascot-halo"></div>
+      <span class="mascot-sparkle s1"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="currentColor"/></svg></span>
+      <span class="mascot-sparkle s2"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="currentColor"/></svg></span>
+      <span class="mascot-sparkle s3"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="currentColor"/></svg></span>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="prompt-card">
+      <div class="prompt-card-label">Your prompt</div>
+      <div class="prompt-preview" id="promptPreview">
+      <pre contenteditable="true" spellcheck="false" id="deliveredPrompt">You are an expert technical writer with deep experience in AI/ML engineering and production systems.
+
+## Task
+Write a comprehensive blog post on how to use Retrieval-Augmented Generation (RAG) in production.
+
+## Target Audience
+Intermediate-to-senior engineers moving a RAG prototype to production. Assume they understand embeddings and vector search conceptually.
+
+## Structure
+1. **Hook** — Open with a concrete production failure RAG solves
+2. **Architecture recap** — Ingestion → embedding → retrieval → generation (brief)
+3. **Chunking strategy** — Fixed-size vs semantic vs recursive; tradeoffs
+4. **Embedding model choice** — Hosted vs self-hosted; versioning and staleness
+5. **Retrieval quality** — Hybrid search, reranking, metadata filtering
+6. **Latency & cost** — Caching, async retrieval, batching
+7. **Observability** — What to measure and recommended eval frameworks
+8. **Common failure modes** — Table: failure, cause, fix
+9. **What to ship first** — Prioritization advice
+
+## Tone
+Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but do show at least one retrieval pipeline example.
+
+## Length
+1200–1600 words.</pre>
+      </div>
+      <div class="prompt-actions">
+        <button class="btn-text copied" onclick="copyPrompt()">Copied ✓</button>
+        <button class="btn-text" onclick="goListening()">Refine</button>
+        <button class="btn-text" onclick="goNew()">New prompt</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Fallback typing bar -->
+<div class="bottom-bar">
+  <div class="bottom-bar-inner">
+    <input type="text" class="mini-input" placeholder="Or type your request…" id="fallbackInput">
+    <button class="mic-mini" onclick="goListening()" aria-label="Voice input">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Subtle preview banner so visitors know this isn't the live app -->
+<div class="preview-banner">
+  Preview <span>· UX redesign in progress · <a href="/nib/">open the live app</a></span>
+</div>
+
+<script>
+  const stages = ['idle', 'listening', 'review', 'interview', 'thinking', 'delivered'];
+  let currentStage = 'idle';
+  let hostOn = true;
+  let voicesLoaded = false;
+
+  // Mock interview script — in prod, the model decides whether to ask any questions
+  // and what to ask. For the draft we hardcode one representative question.
+  const interviewScript = [
+    "Who's the audience — engineers actively building RAG systems, or decision-makers trying to understand the tradeoffs?"
+  ];
+  let interviewIndex = 0;
+
+  // Idle host line is dynamic — built from time of day + visit history so
+  // the experience feels like real intelligence recognizing the user.
+  // Visit history is persisted in localStorage between page loads.
+  let hasTrackedVisit = false;
+  let lastSpokenIdleLine = null;
+
+  function buildIdleHostLine() {
+    const now = Date.now();
+    const hour = new Date().getHours();
+
+    let visits = 0;
+    let lastVisit = 0;
+    try {
+      visits = parseInt(localStorage.getItem('nib_visits') || '0', 10);
+      lastVisit = parseInt(localStorage.getItem('nib_last_visit') || '0', 10);
+    } catch (e) {}
+
+    // Increment visit counter once per page load only (not per idle transition)
+    if (!hasTrackedVisit) {
+      try {
+        localStorage.setItem('nib_visits', String(visits + 1));
+        localStorage.setItem('nib_last_visit', String(now));
+      } catch (e) {}
+      hasTrackedVisit = true;
+    }
+
+    const gapMs = lastVisit ? (now - lastVisit) : null;
+    const HOUR = 60 * 60 * 1000;
+    const DAY = 24 * HOUR;
+    const WEEK = 7 * DAY;
+
+    // Classify visit state
+    let state;
+    if (visits === 0) state = 'first';
+    else if (gapMs !== null && gapMs < HOUR) state = 'sameSession';
+    else if (gapMs !== null && gapMs < DAY) state = 'sameDay';
+    else if (gapMs !== null && gapMs > WEEK) state = 'longGap';
+    else if (visits >= 5) state = 'frequent';
+    else state = 'return';
+
+    // Time-of-day special cases (trump most visit states except 'first')
+    const isEarlyMorning = hour >= 5 && hour < 8;
+    const isLateNight = hour >= 22 || hour < 5;
+
+    const pools = {
+      first: [
+        "Welcome in. I'm Nib. Tell me what you want an AI to do, and I'll shape it into a prompt.",
+        "Hey, first time here? Describe what you're working on in your own words. I'll turn it into something you can use anywhere.",
+        "Good to meet you. I'm Nib — your shortcut to well-structured AI prompts. What are you trying to get done?"
+      ],
+      sameSession: [
+        "Back already? What's next?",
+        "Still here — what are we working on?",
+        "Ready for the next one. What do you need?",
+        "Let's keep going. What's the next task?"
+      ],
+      sameDay: [
+        "Welcome back. What else are we working on?",
+        "Good to see you again. What's on your mind now?",
+        "Back for another one. What are we building?",
+        "Hey again. What's the next thing you need a prompt for?"
+      ],
+      return: [
+        "Welcome back. What do you want an AI to do?",
+        "Good to see you. What are you working on today?",
+        "Hey again. What's the ask?"
+      ],
+      longGap: [
+        "Been a while. What are you working on these days?",
+        "Welcome back — it's been a minute. What's the ask?",
+        "Good to see you again. What can I help you shape up today?"
+      ],
+      frequent: [
+        "Hey you. What are we building this time?",
+        "Back for more. I'm listening.",
+        "Good to have you back. What's the task?",
+        "You know the drill. What do you need?"
+      ],
+      earlyMorning: [
+        "Up early. What are we getting started on?",
+        "Early start today — what's the first task?",
+        "Morning. You're ahead of the crowd. What are we working on?"
+      ],
+      lateNight: [
+        "Working late? Tell me what you need.",
+        "Burning the midnight oil. What can I help with?",
+        "Up late — what are we figuring out?"
+      ]
+    };
+
+    // First-visit line always wins; otherwise time overlays trump the state bucket
+    let pool;
+    if (state === 'first') pool = pools.first;
+    else if (isLateNight) pool = pools.lateNight;
+    else if (isEarlyMorning) pool = pools.earlyMorning;
+    else pool = pools[state];
+
+    // Avoid repeating the exact same line back-to-back in the same page load
+    let candidates = pool.filter(l => l !== lastSpokenIdleLine);
+    if (candidates.length === 0) candidates = pool;
+    const line = candidates[Math.floor(Math.random() * candidates.length)];
+    lastSpokenIdleLine = line;
+    return line;
+  }
+
+  const hostLines = {
+    idle: null, // populated dynamically via buildIdleHostLine()
+    listening: "I'm listening.",
+    review: "Any edits you want to make? Tap looks good when you're ready.",
+    // interview: host line intentionally empty — the question itself is spoken by showInterviewQuestion()
+    interview: "",
+    thinking: "Got it. Writing your prompt now.",
+    delivered: "Here's your prompt — I've copied it to your clipboard. Paste it into any AI tool, or hit refine if you want changes."
+  };
+
+  function getHostLine(name) {
+    if (name === 'idle') return buildIdleHostLine();
+    return hostLines[name];
+  }
+
+  function pickVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices.length) return null;
+    // Prefer warm, natural-sounding voices
+    const prefs = [/samantha/i, /ava/i, /karen/i, /daniel/i, /google us english/i, /google uk english female/i];
+    for (const p of prefs) {
+      const v = voices.find(x => p.test(x.name));
+      if (v) return v;
+    }
+    return voices.find(v => v.lang.startsWith('en')) || voices[0];
+  }
+
+  function speak(text, onend) {
+    if (!text) { if (onend) onend(); return; }
+    if (!hostOn || !('speechSynthesis' in window)) {
+      // If audio is off/unsupported, approximate timing so onend still fires
+      if (onend) setTimeout(onend, Math.min(2500, Math.max(600, text.length * 40)));
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.02;
+    u.pitch = 1.0;
+    u.volume = 0.95;
+    const v = pickVoice();
+    if (v) u.voice = v;
+    if (onend) u.onend = onend;
+    window.speechSynthesis.speak(u);
+  }
+
+  function setState(name) {
+    currentStage = name;
+    stages.forEach(s => {
+      const id = 'stage' + s.charAt(0).toUpperCase() + s.slice(1);
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden', s !== name);
+    });
+    document.getElementById('stateLabel').textContent = name;
+    speak(getHostLine(name));
+    // Auto-copy whenever we land on the delivered stage, regardless of how we got here
+    if (name === 'delivered') autoCopyPrompt();
+  }
+
+  function goListening() { setState('listening'); }
+  function goNew() {
+    // Reset per-session state so the next prompt starts clean
+    interviewIndex = 0;
+    const ta = document.getElementById('transcriptEdit');
+    if (ta) ta.value = '';
+    const ans = document.getElementById('interviewAnswer');
+    if (ans) ans.value = '';
+    const btn = document.querySelector('#stageDelivered .btn-text[onclick*="copyPrompt"]');
+    if (btn) {
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+    }
+    setState('idle');
+  }
+  function goReview() {
+    setState('review');
+    // Preload transcript textarea if empty
+    const ta = document.getElementById('transcriptEdit');
+    if (!ta.value.trim()) ta.value = "I want to write a blog post about how to use RAG in production";
+  }
+  function goInterview() {
+    interviewIndex = 0;
+    setState('interview');
+    showInterviewQuestion();
+  }
+  // Host prompt variations for the Interview stage.
+  // The host does NOT read the clarifying question — that's for the user
+  // to read on screen. The host just nudges them with a short conversational
+  // cue so the interaction feels hosted, not robotic.
+  const interviewHostLines = {
+    first: [
+      "Just a quick clarifying question.",
+      "One thing before I write this — mind answering?",
+      "Quick question for you.",
+      "Mind if I ask you something first?",
+      "Before I get started — a small clarifier.",
+      "One thing I want to check with you."
+    ],
+    followup: [
+      "One more quick thing.",
+      "And another for you.",
+      "One more to go.",
+      "Last quick one.",
+      "Almost there — one more."
+    ]
+  };
+  let lastInterviewHostLine = '';
+  function pickInterviewHostLine() {
+    const pool = interviewIndex === 0 ? interviewHostLines.first : interviewHostLines.followup;
+    let pick;
+    let attempts = 0;
+    do {
+      pick = pool[Math.floor(Math.random() * pool.length)];
+      attempts++;
+    } while (pick === lastInterviewHostLine && attempts < 5);
+    lastInterviewHostLine = pick;
+    return pick;
+  }
+
+  function showInterviewQuestion() {
+    const q = interviewScript[interviewIndex];
+    document.getElementById('interviewQuestion').textContent = q;
+    document.getElementById('interviewProgress').textContent =
+      `Question ${interviewIndex + 1} of ${interviewScript.length}`;
+    document.getElementById('interviewAnswer').value = '';
+    stopInterviewListening();
+    // Host says a short prompt variation — NOT the question itself.
+    // User reads the question on screen; the host is just the companion
+    // that keeps the interaction feeling hosted, then opens the mic.
+    setTimeout(() => {
+      speak(pickInterviewHostLine(), () => {
+        // Only auto-listen if we're still on the interview stage and the
+        // user hasn't typed something in the meantime.
+        if (currentStage !== 'interview') return;
+        const ans = document.getElementById('interviewAnswer');
+        if (ans && ans.value.trim().length > 0) return;
+        startInterviewListening();
+      });
+    }, 600);
+  }
+
+  function startInterviewListening() {
+    const mic = document.getElementById('interviewMic');
+    const hint = document.getElementById('interviewListening');
+    const stage = document.querySelector('#stageInterview .mascot-stage.corner');
+    if (mic) mic.classList.add('recording');
+    if (hint) hint.classList.add('visible');
+    if (stage) { stage.classList.remove('state-idle'); stage.classList.add('state-listening'); }
+  }
+  function stopInterviewListening() {
+    const mic = document.getElementById('interviewMic');
+    const hint = document.getElementById('interviewListening');
+    const stage = document.querySelector('#stageInterview .mascot-stage.corner');
+    if (mic) mic.classList.remove('recording');
+    if (hint) hint.classList.remove('visible');
+    if (stage) { stage.classList.remove('state-listening'); stage.classList.add('state-idle'); }
+  }
+  function toggleInterviewListening() {
+    const mic = document.getElementById('interviewMic');
+    if (mic && mic.classList.contains('recording')) {
+      stopInterviewListening();
+    } else {
+      startInterviewListening();
+    }
+  }
+
+  function submitInterviewAnswer() {
+    stopInterviewListening();
+    interviewIndex++;
+    if (interviewIndex < interviewScript.length) {
+      showInterviewQuestion();
+    } else {
+      goThinking();
+    }
+  }
+  function goThinking() {
+    setState('thinking');
+    setTimeout(() => {
+      setState('delivered');
+      autoCopyPrompt();
+    }, 2400);
+  }
+  function autoCopyPrompt() {
+    const text = document.querySelector('#stageDelivered pre').innerText;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
+    const btn = document.querySelector('#stageDelivered .btn-text[onclick*="copyPrompt"]');
+    if (btn) {
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+    }
+    // Ensure preview starts compact so the buttons are visible
+    const preview = document.getElementById('promptPreview');
+    if (preview) preview.classList.remove('expanded');
+  }
+  function copyPrompt() {
+    const text = document.querySelector('#stageDelivered pre').innerText;
+    navigator.clipboard.writeText(text).catch(() => {});
+    const btn = document.querySelector('#stageDelivered .btn-text[onclick*="copyPrompt"]');
+    const orig = 'Copied ✓';
+    btn.textContent = 'Copied again ✓';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  }
+  function replayHost() { speak(getHostLine(currentStage)); }
+
+  // ============ Background picker ============
+  const bgPalettes = [
+    { name: 'Mist (current)',  bg: '#EDEEEC', paper: '#F6F7F4', border: '#D6D8D3' },
+    { name: 'Cream',           bg: '#F7F3EC', paper: '#FCFAF3', border: '#E6E0D3' },
+    { name: 'Cool off-white',  bg: '#F1F2F4', paper: '#FFFFFF', border: '#DEE0E4' },
+    { name: 'Pale sage',       bg: '#ECEFE9', paper: '#F6F8F3', border: '#D4D9CE' },
+    { name: 'Pale dove',       bg: '#EAEEF1', paper: '#F5F8FA', border: '#D2D8DD' },
+    { name: 'Bone',            bg: '#EFEEEA', paper: '#F8F7F3', border: '#DCD9D1' },
+    { name: 'Pure white',      bg: '#FFFFFF', paper: '#FAFAF8', border: '#E6E4DE' },
+    { name: 'Pale lavender',   bg: '#EEEDF2', paper: '#F7F6FA', border: '#DCDBE3' },
+    { name: 'Ink (dark)',      bg: '#1B1D22', paper: '#262931', border: '#3A3D44', dark: true }
+  ];
+
+  function applyPalette(p) {
+    const root = document.documentElement;
+    root.style.setProperty('--bg', p.bg);
+    root.style.setProperty('--paper', p.paper);
+    root.style.setProperty('--border', p.border);
+    if (p.dark) {
+      root.style.setProperty('--text-main', '#F0EFEC');
+      root.style.setProperty('--text-secondary', '#B4B0AA');
+      root.style.setProperty('--text-muted', '#7A766F');
+    } else {
+      root.style.setProperty('--text-main', '#1E1C1A');
+      root.style.setProperty('--text-secondary', '#55504A');
+      root.style.setProperty('--text-muted', '#8E877E');
+    }
+    // Update fades that hardcode the old cream RGB
+    let dyn = document.getElementById('dynamic-bg');
+    if (!dyn) {
+      dyn = document.createElement('style');
+      dyn.id = 'dynamic-bg';
+      document.head.appendChild(dyn);
+    }
+    const paperRgb = hexToRgb(p.paper);
+    const bgRgb = hexToRgb(p.bg);
+    dyn.textContent = `
+      .prompt-preview::after { background: linear-gradient(to bottom, rgba(${paperRgb}, 0) 0%, ${p.paper} 70%) !important; }
+      .bottom-bar { background: linear-gradient(to top, ${p.bg} 70%, rgba(${bgRgb}, 0)) !important; }
+    `;
+  }
+  function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255].join(', ');
+  }
+
+  const bgSwatches = document.getElementById('bgSwatches');
+  if (bgSwatches) {
+    bgPalettes.forEach((p, i) => {
+      const sw = document.createElement('div');
+      sw.className = 'bg-swatch' + (i === 0 ? ' active' : '');
+      sw.style.background = p.bg;
+      sw.setAttribute('data-name', p.name);
+      sw.addEventListener('click', () => {
+        document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+        sw.classList.add('active');
+        applyPalette(p);
+      });
+      bgSwatches.appendChild(sw);
+    });
+  }
+
+  // ============ Collapsible prompt preview (also contenteditable) ============
+  const promptPreview = document.getElementById('promptPreview');
+  const deliveredPromptEl = document.getElementById('deliveredPrompt');
+  if (promptPreview) {
+    promptPreview.addEventListener('click', (e) => {
+      if (!promptPreview.classList.contains('expanded')) {
+        promptPreview.classList.add('expanded');
+        e.stopPropagation();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!promptPreview.classList.contains('expanded')) return;
+      if (promptPreview.contains(e.target)) return;
+      // Don't collapse while the user is actively editing the prompt
+      if (document.activeElement === deliveredPromptEl) return;
+      promptPreview.classList.remove('expanded');
+    });
+    // Suppress collapse-on-Enter or stray key events from the editor — they
+    // bubble as clicks sometimes on mobile; nothing to do here currently,
+    // but focus/blur give us a clean hook for future behavior.
+    if (deliveredPromptEl) {
+      deliveredPromptEl.addEventListener('blur', () => {
+        // When the user finishes editing, collapse back if nothing else holds focus
+        if (!promptPreview.classList.contains('expanded')) return;
+        // Small delay so a click on a button still registers
+        setTimeout(() => {
+          if (document.activeElement !== deliveredPromptEl) {
+            promptPreview.classList.remove('expanded');
+          }
+        }, 150);
+      });
+      // When the user edits the prompt, the auto-copied version is stale.
+      // Flip the Copy button so they know to re-copy before pasting elsewhere.
+      deliveredPromptEl.addEventListener('input', () => {
+        const btn = document.querySelector('#stageDelivered .btn-text[onclick*="copyPrompt"]');
+        if (btn && btn.classList.contains('copied')) {
+          btn.textContent = 'Copy edited';
+          btn.classList.remove('copied');
+        }
+      });
+    }
+  }
+
+  document.getElementById('hostToggle').addEventListener('click', () => {
+    hostOn = !hostOn;
+    document.getElementById('hostIcon').textContent = hostOn ? '🔊' : '🔇';
+    document.getElementById('hostLabel').textContent = 'Host voice: ' + (hostOn ? 'on' : 'off');
+    if (!hostOn) window.speechSynthesis.cancel();
+  });
+
+  function startExperience() {
+    document.getElementById('primer').style.display = 'none';
+    // Unlock audio with a near-silent utterance, then play the real intro
+    if ('speechSynthesis' in window) {
+      const unlock = new SpeechSynthesisUtterance(' ');
+      unlock.volume = 0;
+      window.speechSynthesis.speak(unlock);
+    }
+    setTimeout(() => speak(getHostLine('idle')), 300);
+  }
+
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = () => { voicesLoaded = true; };
+    // Prime the voice list
+    window.speechSynthesis.getVoices();
+  }
+</script>
+
+</body>
+</html>
