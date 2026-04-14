@@ -1204,31 +1204,74 @@
     91%, 94% { transform: scaleY(0.08); }
   }
 
-  .preview-banner {
+  /* Inline error toast — fades in for ~6s when an API call fails */
+  .stage-error {
     position: fixed;
-    top: 0.85rem;
-    right: 0.9rem;
-    z-index: 60;
-    background: var(--paper);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.4rem 0.95rem;
+    bottom: 5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1E1C1A;
+    color: #F0EFEC;
+    border-radius: 8px;
+    padding: 0.7rem 1.1rem;
     font-family: var(--font-ui);
-    font-size: 0.78rem;
-    letter-spacing: 0.01em;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    font-size: 0.88rem;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    max-width: 90%;
+    z-index: 200;
+    text-align: center;
+  }
+  .stage-error.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Signup CTA strip on Delivered — appears below the action row */
+  .signup-cta {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+    width: 100%;
   }
-  .preview-banner span { color: var(--text-muted); font-size: 0.72rem; }
-  .preview-banner a { color: var(--accent); text-decoration: none; }
-  .preview-banner a:hover { color: var(--accent-light); text-decoration: underline; }
-  @media (max-width: 680px) {
-    .preview-banner { top: 0.5rem; right: 0.5rem; padding: 0.35rem 0.7rem; font-size: 0.7rem; }
-    .preview-banner span { display: none; }
+  .signup-cta .signup-msg { color: var(--text-muted); flex: 1 1 100%; margin-bottom: 0.25rem; }
+  .signup-cta input {
+    flex: 1 1 110px;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    background: var(--paper);
+    color: var(--text-main);
   }
+  .signup-cta input:focus { outline: none; border-color: var(--accent); background: white; }
+  .signup-cta button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.55rem 0.95rem;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+  .signup-cta button:hover { background: var(--accent-light); }
+  .signup-cta button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .signup-cta.success { color: var(--accent); justify-content: center; }
+  .signup-cta.success .signup-msg { color: var(--accent); text-align: center; margin-bottom: 0; }
+  .signup-cta.success input, .signup-cta.success button { display: none; }
 </style>
 </head>
 <body>
@@ -1298,7 +1341,7 @@
   <!-- LISTENING -->
   <div class="stage hidden" id="stageListening">
     <h1 class="stage-prompt">Listening…</h1>
-    <div class="mascot-stage state-listening" onclick="goReview()" aria-label="Tap to stop">
+    <div class="mascot-stage state-listening" onclick="goListening()" aria-label="Tap to stop">
       <div class="mascot-halo"></div>
       <div class="m-ring"></div>
       <div class="m-ring r2"></div>
@@ -1316,7 +1359,7 @@
         </svg>
       </div>
     </div>
-    <div class="transcript-live" id="liveTranscript">"I want to write a blog post about how to use RAG in production…"</div>
+    <div class="transcript-live" id="liveTranscript">Listening… tap Nib again when you're done.</div>
   </div>
 
   <!-- REVIEW -->
@@ -1469,9 +1512,18 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
         <button class="btn-text" onclick="goListening()">Refine</button>
         <button class="btn-text" onclick="goNew()">New prompt</button>
       </div>
+      <form class="signup-cta" id="signupCta" onsubmit="return submitSignup(event)">
+        <span class="signup-msg">Want more like this? Drop your email — we'll lift the daily limit and send occasional updates.</span>
+        <input type="text" name="name" placeholder="Name" required autocomplete="name">
+        <input type="email" name="email" placeholder="you@example.com" required autocomplete="email">
+        <button type="submit" id="signupBtn">Join</button>
+      </form>
     </div>
   </div>
 </main>
+
+<!-- Inline error toast — populated by nibShowError() -->
+<div class="stage-error" id="stageError" role="status" aria-live="polite"></div>
 
 <!-- Fallback typing bar -->
 <div class="bottom-bar">
@@ -1499,12 +1551,389 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
   let hostOn = true;
   let voicesLoaded = false;
 
-  // Mock interview script — in prod, the model decides whether to ask any questions
-  // and what to ask. For the draft we hardcode one representative question.
-  const interviewScript = [
-    "Who's the audience — engineers actively building RAG systems, or decision-makers trying to understand the tradeoffs?"
-  ];
-  let interviewIndex = 0;
+  // ============================================================
+   // API integration — Cloudflare Worker proxying Anthropic + Groq
+   // ============================================================
+   const NIB_API = 'https://prompt-wrapper-api.a-joshmorales.workers.dev';
+   const NIB_MODEL = 'claude-sonnet-4-20250514';
+   const PW_FINAL = '[PW:FINAL]';
+
+   // System prompt — inlined here (kept in sync via nib-system-prompt.txt).
+   // The rebuild script in push_preview.py replaces You are Nib — an expert prompt engineer that transforms raw human intent into optimized, production-ready prompts. The name comes from a pen nib: small, precise, the part that does the actual work.
+
+## Your Behavior
+
+You operate in two phases:
+
+### Phase 1: Intake (usually skip, interview only when needed)
+
+When the user gives you their raw intent (what they want an AI to do):
+
+1. **Default: skip the interview and go straight to Phase 2.** Most requests already contain enough signal to generate a strong prompt. A good prompt engineer makes bold assumptions, ships, and lets the user refine — they don't hold the user hostage with a questionnaire.
+
+2. **Only ask a question if its answer would materially change the shape of the final prompt** — not just polish it. "Material change" means the *structure*, *target tool*, or *core task* would be different depending on the answer. Polish-level unknowns (tone, exact length, minor format preferences) should be filled with smart defaults, not asked about.
+
+3. **Ask at most 2 questions. Asking 0 is preferred.** When in doubt, skip and generate. The user can always say "make it for Midjourney instead" after they see the first draft.
+
+4. If you do ask, pick from the handful that actually reshape the prompt:
+   - What tool/model is this prompt for? (only ask if genuinely ambiguous — e.g. "an image" could be Midjourney, DALL-E, or Flux)
+   - What's the input this prompt will run on? (only ask if the user described a task but not the subject)
+   - Is this a one-shot prompt or a reusable template?
+
+5. **Examples of when to skip the interview entirely:**
+   - *"Write me a prompt that makes Claude review my React code for security issues"* → Skip. Target, task, and domain are all specified. Generate.
+   - *"I need a prompt to summarize long meeting transcripts into action items"* → Skip. Task is clear, output format is implied, any LLM will do. Generate with Claude as default and note the user can swap.
+   - *"Help me write a Midjourney prompt for a cyberpunk alleyway at night"* → Skip. All parameters present. Generate.
+
+6. **Example of when one question is worth asking:**
+   - *"I want a prompt for AI to help me with my business"* → Ask one: "What's the one specific task you want AI to do first?" The whole prompt pivots on that answer.
+
+7. If the user's response to your question is brief or says "you decide" / "whatever works best", make reasonable assumptions and proceed. Never stall.
+
+### Phase 2: Generate Optimized Prompt
+
+On the first message (or once you've asked your one or two questions if you truly needed to), output the optimized prompt. Structure it based on the target:
+
+**For LLM prompts (Claude, GPT, etc.):**
+- Role/persona (only when it genuinely shapes output)
+- Task: specific, action-oriented
+- Context: background the model needs
+- Input description: what will be provided at runtime
+- Output format: structure, length, tone
+- Constraints: what NOT to do, edge cases
+- Examples (optional): when the task is nuanced
+
+**For image generation (Midjourney, DALL-E, Flux):**
+- Subject → style → medium → mood → technical params
+
+**For agent/workflow nodes (n8n, automation):**
+- Trigger condition, input schema, expected output, error handling
+
+**For code generation:**
+- Language, context, constraints, expected behavior, edge cases
+
+## Output Format
+
+Present the optimized prompt in a clearly marked code block so the user can copy it directly.
+
+After the prompt, include a brief "What I optimized" section (3-5 bullets max) explaining key structural decisions. This teaches the user and gives them hooks to request changes.
+
+End with one line inviting refinement. Don't ask multiple questions — one open door.
+
+## CRITICAL: Final-Message Marker
+
+When — and ONLY when — you are delivering a Phase 2 message that contains the finished optimized prompt, begin your entire response with this exact marker on its own line:
+
+[PW:FINAL]
+
+Never include this marker on Phase 1 (interview) messages or on messages that only refine or discuss a prompt without reissuing it. The marker tells the backend that a completed prompt was delivered and is required for correct usage accounting.
+
+## Rules
+
+- **Default to zero clarifying questions.** Generate on the first message when possible. Only ask if the answer would materially reshape the prompt.
+- Never ask more than 2 clarifying questions total. Two should be rare; one should be uncommon; zero should be the norm.
+- A useful imperfect prompt is better than a perfect prompt that never gets written.
+- Every word in the optimized prompt must earn its place. No filler.
+- Don't explain what prompt engineering is. The user is here because they already want it.
+- Be concise in your conversation. No fluff, no "Great question!", no "I'd be happy to help."
+- If the user says "optimize this" and pastes a prompt, improve it directly — don't interview.
+- Format your responses using markdown. Use **bold** for emphasis, code blocks for prompts.
+- **You generate prompts — you never perform the task yourself.** If the user says "write a blog post about X", "research Y", "summarize Z", or "build a list of W", your deliverable is a PROMPT they paste into another AI tool. You do NOT write the blog post, do the research, produce the summary, or build the list. Your output is always the prompt that will do those things when they run it elsewhere.
+
+## Web Search Tool Usage
+
+You have a web_search tool. It exists ONLY to fact-check specific details that belong inside the prompt you are writing — it is not a research tool for the user's underlying topic.
+
+**You MAY use web_search to:**
+- Confirm a tool/model name, version, or capability before referencing it in the prompt (e.g., "does Claude Sonnet 4.6 support vision inputs?", "what is the current Midjourney version flag?")
+- Verify a proper noun the user mentioned so the prompt references it correctly
+- Check a time-sensitive fact that will appear as a constraint or context line inside the prompt (e.g., current model pricing, a recently shipped feature flag)
+
+**You MUST NOT use web_search to:**
+- Research the user's subject matter (e.g., "RAG best practices", "React performance tips", "how to price SaaS") — that content belongs in the runtime prompt, not gathered by you
+- Generate an outline, summary, list of facts, or draft of the user's deliverable
+- "Help" by pulling in background knowledge the user's chosen LLM can supply at runtime
+
+If you are tempted to search to be helpful, stop. The user did not come here to get the answer — they came here to get the PROMPT that will get them the answer. Write the prompt and let their LLM do the work at runtime. A good rule of thumb: if the search result would end up as content inside the final prompt you emit, don't search. If it would only end up as a correction to a name, version, or flag you are about to write, go ahead.
+
+## Known Context (do not ask the user about these)
+
+These are proper nouns you will frequently encounter. Treat them as known and do not ask clarifying questions about what they are. If a user mentions one, proceed as if it's common context.
+
+- **Claude Cowork (or "Cowork")**: An Anthropic desktop app that lets non-developers automate file and task management by directing Claude to use tools on their computer. It supports plugins and skills.
+- **Claude Code**: Anthropic's command-line tool for agentic coding. Developers delegate coding tasks to Claude directly from the terminal.
+- **Claude Agent SDK**: The SDK for building custom agents on top of Claude.
+- **Skills**: Reusable capability bundles (folders containing SKILL.md + assets) that Claude loads on demand. Used in both Claude Code and Cowork.
+- **Plugins**: Installable bundles of MCPs, skills, and tools for Cowork and Claude Code.
+- **MCP (Model Context Protocol)**: Anthropic's open standard for connecting Claude to external tools and data sources.
+- **Anthropic models**: The current frontier lineup is Claude Opus 4.6, Claude Sonnet 4.6, and Claude Haiku 4.5.
+
+If a user references one of these by name or obvious abbreviation, your clarifying questions should focus on their specific goal — not on what the product is. at
+   // deploy time with the contents of nib-system-prompt.txt.
+   const NIB_SYSTEM_PROMPT = `You are Nib — an expert prompt engineer that transforms raw human intent into optimized, production-ready prompts. The name comes from a pen nib: small, precise, the part that does the actual work.
+
+## Your Behavior
+
+You operate in two phases:
+
+### Phase 1: Intake (usually skip, interview only when needed)
+
+When the user gives you their raw intent (what they want an AI to do):
+
+1. **Default: skip the interview and go straight to Phase 2.** Most requests already contain enough signal to generate a strong prompt. A good prompt engineer makes bold assumptions, ships, and lets the user refine — they don't hold the user hostage with a questionnaire.
+
+2. **Only ask a question if its answer would materially change the shape of the final prompt** — not just polish it. "Material change" means the *structure*, *target tool*, or *core task* would be different depending on the answer. Polish-level unknowns (tone, exact length, minor format preferences) should be filled with smart defaults, not asked about.
+
+3. **Ask at most 2 questions. Asking 0 is preferred.** When in doubt, skip and generate. The user can always say "make it for Midjourney instead" after they see the first draft.
+
+4. If you do ask, pick from the handful that actually reshape the prompt:
+   - What tool/model is this prompt for? (only ask if genuinely ambiguous — e.g. "an image" could be Midjourney, DALL-E, or Flux)
+   - What's the input this prompt will run on? (only ask if the user described a task but not the subject)
+   - Is this a one-shot prompt or a reusable template?
+
+5. **Examples of when to skip the interview entirely:**
+   - *"Write me a prompt that makes Claude review my React code for security issues"* → Skip. Target, task, and domain are all specified. Generate.
+   - *"I need a prompt to summarize long meeting transcripts into action items"* → Skip. Task is clear, output format is implied, any LLM will do. Generate with Claude as default and note the user can swap.
+   - *"Help me write a Midjourney prompt for a cyberpunk alleyway at night"* → Skip. All parameters present. Generate.
+
+6. **Example of when one question is worth asking:**
+   - *"I want a prompt for AI to help me with my business"* → Ask one: "What's the one specific task you want AI to do first?" The whole prompt pivots on that answer.
+
+7. If the user's response to your question is brief or says "you decide" / "whatever works best", make reasonable assumptions and proceed. Never stall.
+
+### Phase 2: Generate Optimized Prompt
+
+On the first message (or once you've asked your one or two questions if you truly needed to), output the optimized prompt. Structure it based on the target:
+
+**For LLM prompts (Claude, GPT, etc.):**
+- Role/persona (only when it genuinely shapes output)
+- Task: specific, action-oriented
+- Context: background the model needs
+- Input description: what will be provided at runtime
+- Output format: structure, length, tone
+- Constraints: what NOT to do, edge cases
+- Examples (optional): when the task is nuanced
+
+**For image generation (Midjourney, DALL-E, Flux):**
+- Subject → style → medium → mood → technical params
+
+**For agent/workflow nodes (n8n, automation):**
+- Trigger condition, input schema, expected output, error handling
+
+**For code generation:**
+- Language, context, constraints, expected behavior, edge cases
+
+## Output Format
+
+Present the optimized prompt in a clearly marked code block so the user can copy it directly.
+
+After the prompt, include a brief "What I optimized" section (3-5 bullets max) explaining key structural decisions. This teaches the user and gives them hooks to request changes.
+
+End with one line inviting refinement. Don't ask multiple questions — one open door.
+
+## CRITICAL: Final-Message Marker
+
+When — and ONLY when — you are delivering a Phase 2 message that contains the finished optimized prompt, begin your entire response with this exact marker on its own line:
+
+[PW:FINAL]
+
+Never include this marker on Phase 1 (interview) messages or on messages that only refine or discuss a prompt without reissuing it. The marker tells the backend that a completed prompt was delivered and is required for correct usage accounting.
+
+## Rules
+
+- **Default to zero clarifying questions.** Generate on the first message when possible. Only ask if the answer would materially reshape the prompt.
+- Never ask more than 2 clarifying questions total. Two should be rare; one should be uncommon; zero should be the norm.
+- A useful imperfect prompt is better than a perfect prompt that never gets written.
+- Every word in the optimized prompt must earn its place. No filler.
+- Don't explain what prompt engineering is. The user is here because they already want it.
+- Be concise in your conversation. No fluff, no "Great question!", no "I'd be happy to help."
+- If the user says "optimize this" and pastes a prompt, improve it directly — don't interview.
+- Format your responses using markdown. Use **bold** for emphasis, code blocks for prompts.
+- **You generate prompts — you never perform the task yourself.** If the user says "write a blog post about X", "research Y", "summarize Z", or "build a list of W", your deliverable is a PROMPT they paste into another AI tool. You do NOT write the blog post, do the research, produce the summary, or build the list. Your output is always the prompt that will do those things when they run it elsewhere.
+
+## Web Search Tool Usage
+
+You have a web_search tool. It exists ONLY to fact-check specific details that belong inside the prompt you are writing — it is not a research tool for the user's underlying topic.
+
+**You MAY use web_search to:**
+- Confirm a tool/model name, version, or capability before referencing it in the prompt (e.g., "does Claude Sonnet 4.6 support vision inputs?", "what is the current Midjourney version flag?")
+- Verify a proper noun the user mentioned so the prompt references it correctly
+- Check a time-sensitive fact that will appear as a constraint or context line inside the prompt (e.g., current model pricing, a recently shipped feature flag)
+
+**You MUST NOT use web_search to:**
+- Research the user's subject matter (e.g., "RAG best practices", "React performance tips", "how to price SaaS") — that content belongs in the runtime prompt, not gathered by you
+- Generate an outline, summary, list of facts, or draft of the user's deliverable
+- "Help" by pulling in background knowledge the user's chosen LLM can supply at runtime
+
+If you are tempted to search to be helpful, stop. The user did not come here to get the answer — they came here to get the PROMPT that will get them the answer. Write the prompt and let their LLM do the work at runtime. A good rule of thumb: if the search result would end up as content inside the final prompt you emit, don't search. If it would only end up as a correction to a name, version, or flag you are about to write, go ahead.
+
+## Known Context (do not ask the user about these)
+
+These are proper nouns you will frequently encounter. Treat them as known and do not ask clarifying questions about what they are. If a user mentions one, proceed as if it's common context.
+
+- **Claude Cowork (or "Cowork")**: An Anthropic desktop app that lets non-developers automate file and task management by directing Claude to use tools on their computer. It supports plugins and skills.
+- **Claude Code**: Anthropic's command-line tool for agentic coding. Developers delegate coding tasks to Claude directly from the terminal.
+- **Claude Agent SDK**: The SDK for building custom agents on top of Claude.
+- **Skills**: Reusable capability bundles (folders containing SKILL.md + assets) that Claude loads on demand. Used in both Claude Code and Cowork.
+- **Plugins**: Installable bundles of MCPs, skills, and tools for Cowork and Claude Code.
+- **MCP (Model Context Protocol)**: Anthropic's open standard for connecting Claude to external tools and data sources.
+- **Anthropic models**: The current frontier lineup is Claude Opus 4.6, Claude Sonnet 4.6, and Claude Haiku 4.5.
+
+If a user references one of these by name or obvious abbreviation, your clarifying questions should focus on their specific goal — not on what the product is.`;
+
+   // Conversation state — accumulates across turns (Review → Interview loop).
+   let nibMessages = [];
+
+   // POST /transcribe — multipart audio blob → {transcript}
+   async function nibTranscribe(blob, mimeType) {
+     const form = new FormData();
+     const ext = (mimeType || '').includes('mp4') ? 'm4a' : 'webm';
+     form.append('audio', blob, `audio.${ext}`);
+     const res = await fetch(`${NIB_API}/transcribe`, { method: 'POST', body: form });
+     if (!res.ok) {
+       const e = await res.json().catch(() => ({}));
+       throw new Error(e?.error?.message || e?.error || `Transcription failed (${res.status})`);
+     }
+     const data = await res.json();
+     return (data.transcript || '').trim();
+   }
+
+   // POST /chat — non-streaming JSON. Returns assembled text from text blocks.
+   async function nibChat(messages) {
+     const body = {
+       model: NIB_MODEL,
+       max_tokens: 4096,
+       system: NIB_SYSTEM_PROMPT,
+       messages: messages.map(m => ({ role: m.role, content: m.content })),
+     };
+     let res;
+     try {
+       res = await fetch(`${NIB_API}/chat`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(body),
+       });
+     } catch (e) {
+       throw new Error('Network error — check your internet connection and try again.');
+     }
+     if (!res.ok) {
+       const e = await res.json().catch(() => ({}));
+       if (res.status === 429) throw new Error('FREE_LIMIT_REACHED');
+       throw new Error(e?.error?.message || `API error (${res.status})`);
+     }
+     const data = await res.json();
+     const text = (data.content || [])
+       .filter(b => b && b.type === 'text' && typeof b.text === 'string')
+       .map(b => b.text)
+       .join('\n\n');
+     return text;
+   }
+
+   // Strip the [PW:FINAL] sentinel from text and report whether it was present.
+   function nibParseFinal(text) {
+     if (typeof text !== 'string') return { text: '', isFinal: false };
+     const isFinal = text.includes(PW_FINAL);
+     const cleaned = text
+       .replace(new RegExp(PW_FINAL.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'g'), '')
+       .replace(/^\s+/, '');
+     return { text: cleaned, isFinal };
+   }
+
+   // Extract the prompt code block from a [PW:FINAL] response. The system
+   // prompt asks Claude to deliver the prompt inside a fenced code block,
+   // optionally followed by a "What I optimized" section. Return the raw
+   // prompt text only (so the user can copy it cleanly).
+   function nibExtractPrompt(text) {
+     const fence = text.match(/```[a-zA-Z]*\n([\s\S]*?)```/);
+     if (fence) return fence[1].trim();
+     return text.trim();
+   }
+
+   // POST /signup — name + email + source. Returns true on success.
+   async function nibSignup(name, email) {
+     const res = await fetch(`${NIB_API}/signup`, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ name, email, source: 'nib' }),
+     });
+     const data = await res.json().catch(() => ({}));
+     if (!res.ok) throw new Error(data?.error?.message || data?.error || 'Signup failed.');
+     return true;
+   }
+
+   // ============================================================
+   // MediaRecorder — voice intake
+   // ============================================================
+   let nibMediaStream = null;
+   let nibMediaRecorder = null;
+   let nibAudioChunks = [];
+
+   function nibPickMime() {
+     const opts = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+     for (const m of opts) {
+       if (window.MediaRecorder?.isTypeSupported?.(m)) return m;
+     }
+     return '';
+   }
+   function nibStopStream() {
+     if (nibMediaStream) {
+       nibMediaStream.getTracks().forEach(t => t.stop());
+       nibMediaStream = null;
+     }
+   }
+
+   async function nibStartRecording() {
+     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+       throw new Error('Voice input is not supported in this browser.');
+     }
+     nibAudioChunks = [];
+     nibMediaStream = await navigator.mediaDevices.getUserMedia({
+       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+     });
+     const mime = nibPickMime();
+     nibMediaRecorder = new MediaRecorder(nibMediaStream, mime ? { mimeType: mime } : undefined);
+     nibMediaRecorder.ondataavailable = e => {
+       if (e.data && e.data.size > 0) nibAudioChunks.push(e.data);
+     };
+     nibMediaRecorder.start();
+   }
+
+   // Stops the recorder, transcribes the captured audio, returns transcript text.
+   function nibStopRecordingAndTranscribe() {
+     return new Promise((resolve, reject) => {
+       const r = nibMediaRecorder;
+       if (!r) return reject(new Error('Not recording.'));
+       r.onstop = async () => {
+         const mime = r.mimeType || nibPickMime() || 'audio/webm';
+         const blob = new Blob(nibAudioChunks, { type: mime });
+         nibStopStream();
+         if (!blob.size) return reject(new Error('No audio captured.'));
+         try { resolve(await nibTranscribe(blob, mime)); }
+         catch (e) { reject(e); }
+       };
+       r.onerror = e => { nibStopStream(); reject(new Error('Microphone error.')); };
+       try { r.stop(); } catch (e) { nibStopStream(); reject(e); }
+     });
+   }
+
+   // Surface a user-visible error message in any stage that has #stageError.
+   function nibShowError(msg) {
+     const el = document.getElementById('stageError');
+     if (el) {
+       el.textContent = msg;
+       el.classList.add('visible');
+       setTimeout(() => el.classList.remove('visible'), 6000);
+     } else {
+       console.error('Nib error:', msg);
+       alert(msg);
+     }
+   }
+
+   // ============================================================
+   // (Legacy mock interview script — superseded by real /chat flow)
+   // ============================================================
+   const interviewScript = [];
+   let interviewIndex = 0;
 
   // Idle host line is dynamic — built from time of day + visit history so
   // the experience feels like real intelligence recognizing the user.
@@ -1671,9 +2100,32 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
     if (name === 'delivered') autoCopyPrompt();
   }
 
-  function goListening() { setState('listening'); }
+  // Idle → Listening: tap mascot to start recording. Tap again → stops, transcribes, lands in Review.
+  async function goListening() {
+    if (currentStage === 'listening') {
+      // Already listening: stop, transcribe, advance
+      try {
+        const transcript = await nibStopRecordingAndTranscribe();
+        if (!transcript) { nibShowError("I didn't catch any audio. Try again."); setState('idle'); return; }
+        const ta = document.getElementById('transcriptEdit');
+        if (ta) ta.value = transcript;
+        setState('review');
+      } catch (e) {
+        nibShowError(e.message || 'Could not transcribe audio.');
+        setState('idle');
+      }
+      return;
+    }
+    setState('listening');
+    try { await nibStartRecording(); }
+    catch (e) {
+      nibShowError(e.message || 'Could not access microphone.');
+      setState('idle');
+    }
+  }
   function goNew() {
     // Reset per-session state so the next prompt starts clean
+    nibMessages = [];
     interviewIndex = 0;
     const ta = document.getElementById('transcriptEdit');
     if (ta) ta.value = '';
@@ -1687,15 +2139,29 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
     setState('idle');
   }
   function goReview() {
+    // No mock preload — transcript was filled by transcription or fallback typing.
     setState('review');
-    // Preload transcript textarea if empty
-    const ta = document.getElementById('transcriptEdit');
-    if (!ta.value.trim()) ta.value = "I want to write a blog post about how to use RAG in production";
   }
-  function goInterview() {
-    interviewIndex = 0;
-    setState('interview');
-    showInterviewQuestion();
+  // From Review → submit transcript to the model.
+  // Branch: [PW:FINAL] in response → Delivered. Otherwise → Interview with the response as the question.
+  async function goInterview() {
+    const ta = document.getElementById('transcriptEdit');
+    const transcript = (ta?.value || '').trim();
+    if (!transcript) { nibShowError('Add some text first.'); return; }
+    nibMessages = [{ role: 'user', content: transcript }];
+    setState('thinking');
+    try {
+      const raw = await nibChat(nibMessages);
+      nibMessages.push({ role: 'assistant', content: raw });
+      const { text, isFinal } = nibParseFinal(raw);
+      if (isFinal) {
+        showDeliveredPrompt(text);
+      } else {
+        showClarifyingQuestion(text);
+      }
+    } catch (e) {
+      handleChatError(e);
+    }
   }
   // Host prompt variations for the Interview stage.
   // The host does NOT read the clarifying question — that's for the user
@@ -1731,26 +2197,32 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
     return pick;
   }
 
-  function showInterviewQuestion() {
-    const q = interviewScript[interviewIndex];
-    document.getElementById('interviewQuestion').textContent = q;
-    document.getElementById('interviewProgress').textContent =
-      `Question ${interviewIndex + 1} of ${interviewScript.length}`;
+  // Show a clarifying question received from the model. Drives the Interview stage.
+  function showClarifyingQuestion(questionText) {
+    interviewIndex++;
+    document.getElementById('interviewQuestion').textContent = questionText;
+    document.getElementById('interviewProgress').textContent = interviewIndex === 1
+      ? 'Quick question'
+      : `Question ${interviewIndex}`;
     document.getElementById('interviewAnswer').value = '';
     stopInterviewListening();
-    // Host says a short prompt variation — NOT the question itself.
-    // User reads the question on screen; the host is just the companion
-    // that keeps the interaction feeling hosted, then opens the mic.
+    setState('interview');
+    // Host says a short conversational nudge (NOT the question text).
     setTimeout(() => {
       speak(pickInterviewHostLine(), () => {
-        // Only auto-listen if we're still on the interview stage and the
-        // user hasn't typed something in the meantime.
         if (currentStage !== 'interview') return;
         const ans = document.getElementById('interviewAnswer');
         if (ans && ans.value.trim().length > 0) return;
         startInterviewListening();
       });
     }, 600);
+  }
+
+  // Legacy: kept so any old links still work, but the real path is showClarifyingQuestion.
+  function showInterviewQuestion() {
+    if (interviewScript.length === 0) return;
+    const q = interviewScript[interviewIndex];
+    document.getElementById('interviewQuestion').textContent = q;
   }
 
   function startInterviewListening() {
@@ -1778,21 +2250,70 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
     }
   }
 
-  function submitInterviewAnswer() {
+  // Submit the user's answer to the current clarifying question.
+  // Sends the conversation back through /chat. Branches the same way as goInterview.
+  async function submitInterviewAnswer() {
     stopInterviewListening();
-    interviewIndex++;
-    if (interviewIndex < interviewScript.length) {
-      showInterviewQuestion();
-    } else {
-      goThinking();
+    const input = document.getElementById('interviewAnswer');
+    const answer = (input?.value || '').trim();
+    if (!answer) {
+      // Empty answer = treat as "skip — just generate the prompt"
+      return goSkipInterview();
+    }
+    nibMessages.push({ role: 'user', content: answer });
+    setState('thinking');
+    try {
+      const raw = await nibChat(nibMessages);
+      nibMessages.push({ role: 'assistant', content: raw });
+      const { text, isFinal } = nibParseFinal(raw);
+      if (isFinal) showDeliveredPrompt(text);
+      else showClarifyingQuestion(text);
+    } catch (e) {
+      handleChatError(e);
     }
   }
+
+  // User chose to skip: nudge the model to deliver the prompt now.
+  async function goSkipInterview() {
+    stopInterviewListening();
+    nibMessages.push({ role: 'user', content: 'Skip the interview — generate the prompt now with what you have.' });
+    setState('thinking');
+    try {
+      const raw = await nibChat(nibMessages);
+      nibMessages.push({ role: 'assistant', content: raw });
+      const { text, isFinal } = nibParseFinal(raw);
+      if (isFinal) showDeliveredPrompt(text);
+      else showDeliveredPrompt(text); // Force delivery even if the model doesn't sentinel
+    } catch (e) {
+      handleChatError(e);
+    }
+  }
+
+  // Render the final prompt in the Delivered stage and auto-copy.
+  function showDeliveredPrompt(rawText) {
+    const promptOnly = nibExtractPrompt(rawText);
+    const pre = document.querySelector('#stageDelivered pre');
+    if (pre) pre.textContent = promptOnly;
+    setState('delivered');
+    autoCopyPrompt();
+  }
+
+  // Centralized error handler for /chat failures.
+  function handleChatError(err) {
+    const msg = err.message || 'Something went wrong.';
+    if (msg === 'FREE_LIMIT_REACHED') {
+      nibShowError("You've used your free prompt for today. Come back tomorrow.");
+    } else {
+      nibShowError(msg);
+    }
+    // Fall back to Review so the user can retry without losing their transcript
+    setState('review');
+  }
+
+  // Legacy shim — kept since dev controls/scrubber may still call it.
   function goThinking() {
     setState('thinking');
-    setTimeout(() => {
-      setState('delivered');
-      autoCopyPrompt();
-    }, 2400);
+    setTimeout(() => setState('delivered'), 2400);
   }
   function autoCopyPrompt() {
     const text = document.querySelector('#stageDelivered pre').innerText;
@@ -1817,6 +2338,30 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
     setTimeout(() => { btn.textContent = orig; }, 1500);
   }
   function replayHost() { speak(getHostLine(currentStage)); }
+
+  // Signup CTA on Delivered — POST /signup, swap to a thank-you state on success.
+  async function submitSignup(e) {
+    e.preventDefault();
+    const form = document.getElementById('signupCta');
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    if (!name || !email) { nibShowError('Add a name and email.'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { nibShowError('That email looks off — try again.'); return false; }
+    const btn = document.getElementById('signupBtn');
+    btn.disabled = true;
+    btn.textContent = 'Joining…';
+    try {
+      await nibSignup(name, email);
+      const msg = form.querySelector('.signup-msg');
+      msg.textContent = `Thanks ${name.split(' ')[0]} — you're on the list.`;
+      form.classList.add('success');
+    } catch (err) {
+      nibShowError(err.message || 'Signup failed. Try again.');
+      btn.disabled = false;
+      btn.textContent = 'Join';
+    }
+    return false;
+  }
 
   // ============ Background picker ============
   const bgPalettes = [
