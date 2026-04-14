@@ -1276,14 +1276,6 @@
 </head>
 <body>
 
-<div class="primer" id="primer">
-  <div class="primer-inner">
-    <h2>Nib — redesign draft</h2>
-    <p>Voice-first prototype with a narrator ("host") that talks you through each stage. Tap enter to unlock audio and start the experience.</p>
-    <button class="btn-primary" onclick="startExperience()">Enter draft</button>
-  </div>
-</div>
-
 <header>
   <div class="logo">
     <span class="logo-wordmark">nib</span>
@@ -2492,7 +2484,8 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   }
 
   function startExperience() {
-    document.getElementById('primer').style.display = 'none';
+    const primerEl = document.getElementById('primer');
+    if (primerEl) primerEl.style.display = 'none';
     // Unlock audio with a near-silent utterance, then play the real intro
     if ('speechSynthesis' in window) {
       const unlock = new SpeechSynthesisUtterance(' ');
@@ -2500,6 +2493,29 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       window.speechSynthesis.speak(unlock);
     }
     setTimeout(() => speak(getHostLine('idle')), 300);
+  }
+
+  // Audio-unlock fallback for builds where the primer overlay has been
+  // stripped (preview / production). Fires once on the first user gesture
+  // so speechSynthesis is unlocked and the host greeting plays naturally.
+  let nibAudioUnlocked = false;
+  function nibFirstGestureUnlock() {
+    if (nibAudioUnlocked) return;
+    nibAudioUnlocked = true;
+    if ('speechSynthesis' in window) {
+      const unlock = new SpeechSynthesisUtterance(' ');
+      unlock.volume = 0;
+      window.speechSynthesis.speak(unlock);
+    }
+    // Play the idle greeting on the first interaction (warmer than at cold load)
+    setTimeout(() => {
+      if (currentStage === 'idle') speak(getHostLine('idle'));
+    }, 250);
+  }
+  // Only attach this fallback if the primer overlay is absent (i.e., stripped builds)
+  if (!document.getElementById('primer')) {
+    window.addEventListener('click', nibFirstGestureUnlock, { once: true, capture: true });
+    window.addEventListener('keydown', nibFirstGestureUnlock, { once: true, capture: true });
   }
 
   if ('speechSynthesis' in window) {
