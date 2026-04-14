@@ -1972,6 +1972,13 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       const el = document.getElementById(id);
       if (el) el.classList.toggle('hidden', s !== name);
     });
+    // Hide the bottom fallback typing bar on stages that have their own input
+    // (review, interview) or that are purely output (thinking, delivered).
+    const bottomBar = document.querySelector('.bottom-bar');
+    if (bottomBar) {
+      const showBar = name === 'idle' || name === 'listening';
+      bottomBar.classList.toggle('hidden', !showBar);
+    }
     // stateLabel only exists in the dev draft; null-safe for stripped builds
     const labelEl = document.getElementById('stateLabel');
     if (labelEl) labelEl.textContent = name;
