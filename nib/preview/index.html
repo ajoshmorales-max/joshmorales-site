@@ -436,7 +436,6 @@
     background: var(--bg);
     display: flex;
     justify-content: center;
-    pointer-events: none;
   }
   .bottom-bar-inner {
     display: flex;
@@ -1931,6 +1930,21 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
     document.getElementById('hostLabel').textContent = 'Host voice: ' + (hostOn ? 'on' : 'off');
     if (!hostOn) window.speechSynthesis.cancel();
   });
+
+  // Bottom typing-bar fallback — pressing Enter takes the typed request
+  // straight to the Review stage with that text as the transcript.
+  const fallbackInput = document.getElementById('fallbackInput');
+  if (fallbackInput) {
+    fallbackInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const text = fallbackInput.value.trim();
+      if (!text) return;
+      const ta = document.getElementById('transcriptEdit');
+      if (ta) ta.value = text;
+      fallbackInput.value = '';
+      setState('review');
+    });
+  }
 
   function startExperience() {
     document.getElementById('primer').style.display = 'none';
