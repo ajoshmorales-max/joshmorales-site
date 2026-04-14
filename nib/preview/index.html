@@ -1669,7 +1669,9 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
       const el = document.getElementById(id);
       if (el) el.classList.toggle('hidden', s !== name);
     });
-    document.getElementById('stateLabel').textContent = name;
+    // stateLabel only exists in the dev draft; null-safe for stripped builds
+    const labelEl = document.getElementById('stateLabel');
+    if (labelEl) labelEl.textContent = name;
     speak(getHostLine(name));
     // Auto-copy whenever we land on the delivered stage, regardless of how we got here
     if (name === 'delivered') autoCopyPrompt();
