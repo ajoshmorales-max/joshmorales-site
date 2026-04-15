@@ -1675,7 +1675,10 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
        throw new Error(e?.error?.message || e?.error || `Transcription failed (${res.status})`);
      }
      const data = await res.json();
-     return (data.transcript || '').trim();
+     // Worker returns {raw, text, cleaned} — text is the Llama-cleaned version
+     // when available, otherwise the raw Whisper output. Fall back to `transcript`
+     // for schema drift safety.
+     return (data.text || data.transcript || data.raw || '').trim();
    }
 
    // POST /chat — non-streaming JSON. Returns assembled text from text blocks.
