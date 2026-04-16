@@ -1994,18 +1994,21 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       const finish = () => {
         if (fired) return;
         fired = true;
-        if (currentAudioEl === audio) currentAudioEl = null;
+        if (currentAudioEl !== audio) return; // stale — newer clip took over
+        currentAudioEl = null;
         if (onend) onend();
       };
       audio.addEventListener('ended', finish);
       audio.addEventListener('error', () => {
-        if (currentAudioEl === audio) currentAudioEl = null;
+        if (currentAudioEl !== audio) return; // stale — a newer clip is playing
+        currentAudioEl = null;
         fallbackSpeak(text, onend);
       });
       const p = audio.play();
       if (p && typeof p.catch === 'function') {
         p.catch(() => {
-          if (currentAudioEl === audio) currentAudioEl = null;
+          if (currentAudioEl !== audio) return; // stale — a newer clip is playing
+          currentAudioEl = null;
           fallbackSpeak(text, onend);
         });
       }
