@@ -1909,28 +1909,34 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     };
 
     // First-visit line always wins; otherwise time overlays trump the state bucket
-    let pool;
-    if (state === 'first') pool = pools.first;
-    else if (isLateNight) pool = pools.lateNight;
-    else if (isEarlyMorning) pool = pools.earlyMorning;
-    else pool = pools[state];
+    let poolName;
+    if (state === 'first') poolName = 'first';
+    else if (isLateNight) poolName = 'lateNight';
+    else if (isEarlyMorning) poolName = 'earlyMorning';
+    else poolName = state;
+    const pool = pools[poolName];
 
-    // Avoid repeating the exact same line back-to-back in the same page load
-    let candidates = pool.filter(l => l !== lastSpokenIdleLine);
-    if (candidates.length === 0) candidates = pool;
-    const line = candidates[Math.floor(Math.random() * candidates.length)];
-    lastSpokenIdleLine = line;
-    return line;
+    // Avoid repeating the exact same line back-to-back in the same page load.
+    // Keep index alongside text so we can map to the pre-generated audio file.
+    const indexed = pool.map((t, i) => ({ idx: i, text: t }));
+    let candidates = indexed.filter(x => x.text !== lastSpokenIdleLine);
+    if (candidates.length === 0) candidates = indexed;
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    lastSpokenIdleLine = chosen.text;
+    return { id: `idle-${poolName}-${chosen.idx}`, text: chosen.text };
   }
 
+  // Each stage maps to {id, text}. id is the canned-audio filename in audio/<id>.mp3.
+  // Keep text in sync with nib-audio-manifest.json — the pre-generated mp3s
+  // match these exact lines. If you edit text, regenerate audio.
   const hostLines = {
     idle: null, // populated dynamically via buildIdleHostLine()
-    listening: "I'm listening.",
-    review: "Any edits you want to make? Tap looks good when you're ready.",
-    // interview: host line intentionally empty — the question itself is spoken by showInterviewQuestion()
-    interview: "",
-    thinking: "Got it. Writing your prompt now.",
-    delivered: "Here's your prompt — I've copied it to your clipboard. Paste it into any AI tool, or hit refine if you want changes."
+    listening: { id: 'stage-listening', text: "I'm listening." },
+    review:    { id: 'stage-review',    text: "Any edits you want to make? Tap looks good when you're ready." },
+    // interview: host line intentionally empty — spoken via pickInterviewHostLine()
+    interview: null,
+    thinking:  { id: 'stage-thinking',  text: "Got it. Writing your prompt now." },
+    delivered: { id: 'stage-delivered', text: "Here's your prompt — I've copied it to your clipboard. Paste it into any AI tool, or hit refine if you want changes." }
   };
 
   function getHostLine(name) {
@@ -1950,10 +1956,69 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     return voices.find(v => v.lang.startsWith('en')) || voices[0];
   }
 
-  function speak(text, onend) {
+  // Canned audio lives alongside index.html under audio/<id>.mp3.
+  // Relative so preview (/nib/preview/audio/) and prod (/nib/audio/) both work.
+  const NIB_AUDIO_BASE = 'audio/';
+  let currentAudioEl = null;
+
+  // speak() accepts either a string (legacy) or {id, text}. When an id is
+  // present we play the pre-generated Puck clip; otherwise (or on failure)
+  // we fall back to the browser's speechSynthesis so the app still speaks.
+  function speak(line, onend) {
+    // Normalize legacy string input
+    const obj = (typeof line === 'string') ? { id: '', text: line } : (line || { id: '', text: '' });
+    const text = obj.text || '';
+    const id = obj.id || '';
+
+    if (!text && !id) { if (onend) onend(); return; }
+
+    if (!hostOn) {
+      // Host muted — still call onend so flow advances
+      if (onend) setTimeout(onend, Math.min(2500, Math.max(600, text.length * 40)));
+      return;
+    }
+
+    // Stop anything already playing
+    if (currentAudioEl) {
+      try { currentAudioEl.pause(); } catch (e) {}
+      currentAudioEl = null;
+    }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+    // Preferred path: pre-generated mp3
+    if (id) {
+      const audio = new Audio(NIB_AUDIO_BASE + id + '.mp3');
+      audio.volume = 0.95;
+      currentAudioEl = audio;
+      let fired = false;
+      const finish = () => {
+        if (fired) return;
+        fired = true;
+        if (currentAudioEl === audio) currentAudioEl = null;
+        if (onend) onend();
+      };
+      audio.addEventListener('ended', finish);
+      audio.addEventListener('error', () => {
+        if (currentAudioEl === audio) currentAudioEl = null;
+        fallbackSpeak(text, onend);
+      });
+      const p = audio.play();
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => {
+          if (currentAudioEl === audio) currentAudioEl = null;
+          fallbackSpeak(text, onend);
+        });
+      }
+      return;
+    }
+
+    // No id — use browser TTS
+    fallbackSpeak(text, onend);
+  }
+
+  function fallbackSpeak(text, onend) {
     if (!text) { if (onend) onend(); return; }
-    if (!hostOn || !('speechSynthesis' in window)) {
-      // If audio is off/unsupported, approximate timing so onend still fires
+    if (!('speechSynthesis' in window)) {
       if (onend) setTimeout(onend, Math.min(2500, Math.max(600, text.length * 40)));
       return;
     }
@@ -2076,15 +2141,16 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   };
   let lastInterviewHostLine = '';
   function pickInterviewHostLine() {
-    const pool = interviewIndex === 0 ? interviewHostLines.first : interviewHostLines.followup;
-    let pick;
+    const poolName = interviewIndex === 0 ? 'first' : 'followup';
+    const pool = interviewHostLines[poolName];
+    let idx;
     let attempts = 0;
     do {
-      pick = pool[Math.floor(Math.random() * pool.length)];
+      idx = Math.floor(Math.random() * pool.length);
       attempts++;
-    } while (pick === lastInterviewHostLine && attempts < 5);
-    lastInterviewHostLine = pick;
-    return pick;
+    } while (pool[idx] === lastInterviewHostLine && attempts < 5);
+    lastInterviewHostLine = pool[idx];
+    return { id: `interview-${poolName}-${idx}`, text: pool[idx] };
   }
 
   // Show a clarifying question received from the model. Drives the Interview stage.
@@ -2363,7 +2429,10 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     hostOn = !hostOn;
     document.getElementById('hostIcon').textContent = hostOn ? '🔊' : '🔇';
     document.getElementById('hostLabel').textContent = 'Host voice: ' + (hostOn ? 'on' : 'off');
-    if (!hostOn) window.speechSynthesis.cancel();
+    if (!hostOn) {
+      if (currentAudioEl) { try { currentAudioEl.pause(); } catch (e) {} currentAudioEl = null; }
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
   });
 
   // Bottom typing-bar fallback — pressing Enter takes the typed request
@@ -2384,31 +2453,18 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   function startExperience() {
     const primerEl = document.getElementById('primer');
     if (primerEl) primerEl.style.display = 'none';
-    // Unlock audio with a near-silent utterance, then play the real intro
-    if ('speechSynthesis' in window) {
-      const unlock = new SpeechSynthesisUtterance(' ');
-      unlock.volume = 0;
-      window.speechSynthesis.speak(unlock);
-    }
+    // Called from a user gesture — the immediate speak() satisfies browser
+    // autoplay rules. Small delay just smooths the primer dismiss animation.
     setTimeout(() => speak(getHostLine('idle')), 300);
   }
 
-  // Audio-unlock fallback for builds where the primer overlay has been
-  // stripped (preview / production). Fires once on the first user gesture
-  // so speechSynthesis is unlocked and the host greeting plays naturally.
+  // Fallback for builds where the primer overlay has been stripped
+  // (preview / production): play the greeting on the first user gesture.
   let nibAudioUnlocked = false;
   function nibFirstGestureUnlock() {
     if (nibAudioUnlocked) return;
     nibAudioUnlocked = true;
-    if ('speechSynthesis' in window) {
-      const unlock = new SpeechSynthesisUtterance(' ');
-      unlock.volume = 0;
-      window.speechSynthesis.speak(unlock);
-    }
-    // Play the idle greeting on the first interaction (warmer than at cold load)
-    setTimeout(() => {
-      if (currentStage === 'idle') speak(getHostLine('idle'));
-    }, 250);
+    if (currentStage === 'idle') speak(getHostLine('idle'));
   }
   // Only attach this fallback if the primer overlay is absent (i.e., stripped builds)
   if (!document.getElementById('primer')) {
