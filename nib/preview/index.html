@@ -1260,14 +1260,6 @@
 </head>
 <body>
 
-<div class="primer" id="primer">
-  <div class="primer-inner">
-    <h2>Nib</h2>
-    <p>Speak a rough idea. Nib sharpens it into a production-ready prompt.</p>
-    <button class="btn-primary" onclick="startExperience()">Begin</button>
-  </div>
-</div>
-
 <header>
   <div class="logo">
     <span class="logo-wordmark">nib</span>
@@ -1812,6 +1804,7 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   //   'think'  — three soft staccato ticks evoking a pen scratching ideas
   //   'done'   — two-note success chime when the prompt is delivered
   let nibAudioCtx = null;
+  let nibStartPlayed = false; // gate so 'start' always fires before anything else
   function nibGetAudioCtx() {
     if (nibAudioCtx) return nibAudioCtx;
     const Ctor = window.AudioContext || window.webkitAudioContext;
@@ -1835,6 +1828,13 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     const ctx = nibGetAudioCtx();
     if (!ctx) return;
     if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+    // If 'start' hasn't played yet and we're about to play something else,
+    // defer it so the welcome chime lands first (~300ms head start).
+    if (kind !== 'start' && !nibStartPlayed) {
+      setTimeout(() => playSfx(kind), 350);
+      return;
+    }
+    if (kind === 'start') nibStartPlayed = true;
     const t = ctx.currentTime;
     if (kind === 'start') {
       // Warm welcoming arpeggio: C5 → E5 → G5 (major triad)
@@ -2232,6 +2232,40 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     // Warm welcome chime — also serves as the user-gesture audio unlock.
     playSfx('start');
   }
+
+  // Fire 'start' on app load. Browsers block autoplay until a user gesture,
+  // so: attempt immediately; if the audio context stays suspended, arm a
+  // one-time listener on the first interaction anywhere on the page.
+  (function armStartSfx() {
+    function tryPlayStart() {
+      if (nibStartPlayed) return true;
+      const ctx = nibGetAudioCtx();
+      if (!ctx) return false;
+      try { ctx.resume(); } catch (e) {}
+      if (ctx.state === 'running') {
+        playSfx('start');
+        return true;
+      }
+      return false;
+    }
+    // Attempt on load (works if autoplay is permitted for the site)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', tryPlayStart, { once: true });
+    } else {
+      tryPlayStart();
+    }
+    // Fallback: first user gesture anywhere triggers it
+    const onFirstGesture = () => {
+      if (tryPlayStart()) {
+        document.removeEventListener('pointerdown', onFirstGesture, true);
+        document.removeEventListener('keydown', onFirstGesture, true);
+        document.removeEventListener('touchstart', onFirstGesture, true);
+      }
+    };
+    document.addEventListener('pointerdown', onFirstGesture, true);
+    document.addEventListener('keydown', onFirstGesture, true);
+    document.addEventListener('touchstart', onFirstGesture, true);
+  })();
 </script>
 
 </body>
