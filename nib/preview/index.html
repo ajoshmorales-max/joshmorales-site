@@ -82,21 +82,6 @@
     93%, 96% { transform: scaleY(0.1); }
   }
   .header-right { display: flex; align-items: center; gap: 1rem; }
-  .btn-host-toggle {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 0.5rem 0.875rem;
-    font-family: inherit;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    transition: all 0.2s;
-  }
-  .btn-host-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
   /* Info button + tooltip */
   .info-wrap { position: relative; }
@@ -1103,7 +1088,6 @@
     .logo-mascot { width: 19px; height: 19px; top: 2px; }
     .header-right { gap: 0.5rem; }
     .btn-info { width: 28px; height: 28px; font-size: 0.85rem; }
-    .btn-host-toggle { font-size: 0.72rem; padding: 0.4rem 0.6rem; }
     .info-tooltip { width: 260px; right: -4px; }
     .state-indicator { display: none !important; }
     /* Keep dev-controls visible at mobile widths so we can still scrub during preview */
@@ -1297,10 +1281,6 @@
         Nib turns your raw idea into a ready-to-use AI prompt. Describe what you want an AI to do — in your own words — and Nib shapes it into a structured prompt you can paste into Claude, ChatGPT, Midjourney, or any other model.
       </div>
     </div>
-    <button class="btn-host-toggle" id="hostToggle">
-      <span id="hostIcon">🔊</span>
-      <span id="hostLabel">Host voice: on</span>
-    </button>
   </div>
 </header>
 
@@ -1538,8 +1518,6 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
 <script>
   const stages = ['idle', 'listening', 'review', 'interview', 'thinking', 'delivered'];
   let currentStage = 'idle';
-  let hostOn = true;
-  let voicesLoaded = false;
 
   // ============================================================
    // API integration — Cloudflare Worker proxying Anthropic + Groq
@@ -1818,222 +1796,46 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
    const interviewScript = [];
    let interviewIndex = 0;
 
-  // Idle host line is dynamic — built from time of day + visit history so
-  // the experience feels like real intelligence recognizing the user.
-  // Visit history is persisted in localStorage between page loads.
-  let hasTrackedVisit = false;
-  let lastSpokenIdleLine = null;
-
-  function buildIdleHostLine() {
-    const now = Date.now();
-    const hour = new Date().getHours();
-
-    let visits = 0;
-    let lastVisit = 0;
-    try {
-      visits = parseInt(localStorage.getItem('nib_visits') || '0', 10);
-      lastVisit = parseInt(localStorage.getItem('nib_last_visit') || '0', 10);
-    } catch (e) {}
-
-    // Increment visit counter once per page load only (not per idle transition)
-    if (!hasTrackedVisit) {
-      try {
-        localStorage.setItem('nib_visits', String(visits + 1));
-        localStorage.setItem('nib_last_visit', String(now));
-      } catch (e) {}
-      hasTrackedVisit = true;
-    }
-
-    const gapMs = lastVisit ? (now - lastVisit) : null;
-    const HOUR = 60 * 60 * 1000;
-    const DAY = 24 * HOUR;
-    const WEEK = 7 * DAY;
-
-    // Classify visit state
-    let state;
-    if (visits === 0) state = 'first';
-    else if (gapMs !== null && gapMs < HOUR) state = 'sameSession';
-    else if (gapMs !== null && gapMs < DAY) state = 'sameDay';
-    else if (gapMs !== null && gapMs > WEEK) state = 'longGap';
-    else if (visits >= 5) state = 'frequent';
-    else state = 'return';
-
-    // Time-of-day special cases (trump most visit states except 'first')
-    const isEarlyMorning = hour >= 5 && hour < 8;
-    const isLateNight = hour >= 22 || hour < 5;
-
-    const pools = {
-      first: [
-        "Welcome in. I'm Nib. Tell me what you want an AI to do, and I'll shape it into a prompt.",
-        "Hey, first time here? Describe what you're working on in your own words. I'll turn it into something you can use anywhere.",
-        "Good to meet you. I'm Nib — your shortcut to well-structured AI prompts. What are you trying to get done?"
-      ],
-      sameSession: [
-        "Back already? What's next?",
-        "Still here — what are we working on?",
-        "Ready for the next one. What do you need?",
-        "Let's keep going. What's the next task?"
-      ],
-      sameDay: [
-        "Welcome back. What else are we working on?",
-        "Good to see you again. What's on your mind now?",
-        "Back for another one. What are we building?",
-        "Hey again. What's the next thing you need a prompt for?"
-      ],
-      return: [
-        "Welcome back. What do you want an AI to do?",
-        "Good to see you. What are you working on today?",
-        "Hey again. What's the ask?"
-      ],
-      longGap: [
-        "Been a while. What are you working on these days?",
-        "Welcome back — it's been a minute. What's the ask?",
-        "Good to see you again. What can I help you shape up today?"
-      ],
-      frequent: [
-        "Hey you. What are we building this time?",
-        "Back for more. I'm listening.",
-        "Good to have you back. What's the task?",
-        "You know the drill. What do you need?"
-      ],
-      earlyMorning: [
-        "Up early. What are we getting started on?",
-        "Early start today — what's the first task?",
-        "Morning. You're ahead of the crowd. What are we working on?"
-      ],
-      lateNight: [
-        "Working late? Tell me what you need.",
-        "Burning the midnight oil. What can I help with?",
-        "Up late — what are we figuring out?"
-      ]
-    };
-
-    // First-visit line always wins; otherwise time overlays trump the state bucket
-    let poolName;
-    if (state === 'first') poolName = 'first';
-    else if (isLateNight) poolName = 'lateNight';
-    else if (isEarlyMorning) poolName = 'earlyMorning';
-    else poolName = state;
-    const pool = pools[poolName];
-
-    // Avoid repeating the exact same line back-to-back in the same page load.
-    // Keep index alongside text so we can map to the pre-generated audio file.
-    const indexed = pool.map((t, i) => ({ idx: i, text: t }));
-    let candidates = indexed.filter(x => x.text !== lastSpokenIdleLine);
-    if (candidates.length === 0) candidates = indexed;
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    lastSpokenIdleLine = chosen.text;
-    return { id: `idle-${poolName}-${chosen.idx}`, text: chosen.text };
+  // Mascot SFX — short synthesized tones that punctuate stage transitions.
+  // Web Audio API: no files, no network, no autoplay fuss when invoked from
+  // a user gesture. Three kinds are used:
+  //   'listen' — ascending two-note chirp when we start capturing input
+  //   'think'  — soft single tick when the model starts generating
+  //   'done'   — two-note success chime when the prompt is delivered
+  let nibAudioCtx = null;
+  function nibGetAudioCtx() {
+    if (nibAudioCtx) return nibAudioCtx;
+    const Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!Ctor) return null;
+    try { nibAudioCtx = new Ctor(); } catch (e) { return null; }
+    return nibAudioCtx;
   }
-
-  // Each stage maps to {id, text}. id is the canned-audio filename in audio/<id>.mp3.
-  // Keep text in sync with nib-audio-manifest.json — the pre-generated mp3s
-  // match these exact lines. If you edit text, regenerate audio.
-  const hostLines = {
-    idle: null, // populated dynamically via buildIdleHostLine()
-    listening: { id: 'stage-listening', text: "I'm listening." },
-    review:    { id: 'stage-review',    text: "Any edits you want to make? Tap looks good when you're ready." },
-    // interview: host line intentionally empty — spoken via pickInterviewHostLine()
-    interview: null,
-    thinking:  { id: 'stage-thinking',  text: "Got it. Writing your prompt now." },
-    delivered: { id: 'stage-delivered', text: "Here's your prompt — I've copied it to your clipboard. Paste it into any AI tool, or hit refine if you want changes." }
-  };
-
-  function getHostLine(name) {
-    if (name === 'idle') return buildIdleHostLine();
-    return hostLines[name];
+  function nibTone(ctx, freq, startAt, dur, type, peak) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, startAt);
+    gain.gain.setValueAtTime(0, startAt);
+    gain.gain.linearRampToValueAtTime(peak, startAt + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0005, startAt + dur);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(startAt);
+    osc.stop(startAt + dur + 0.02);
   }
-
-  function pickVoice() {
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices.length) return null;
-    // Prefer warm, natural-sounding voices
-    const prefs = [/samantha/i, /ava/i, /karen/i, /daniel/i, /google us english/i, /google uk english female/i];
-    for (const p of prefs) {
-      const v = voices.find(x => p.test(x.name));
-      if (v) return v;
+  function playSfx(kind) {
+    const ctx = nibGetAudioCtx();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+    const t = ctx.currentTime;
+    if (kind === 'listen') {
+      nibTone(ctx, 880,  t,        0.09, 'sine', 0.18);
+      nibTone(ctx, 1319, t + 0.08, 0.13, 'sine', 0.18);
+    } else if (kind === 'think') {
+      nibTone(ctx, 520, t, 0.16, 'triangle', 0.13);
+    } else if (kind === 'done') {
+      nibTone(ctx, 1047, t,       0.11, 'sine', 0.20);
+      nibTone(ctx, 1568, t + 0.1, 0.20, 'sine', 0.20);
     }
-    return voices.find(v => v.lang.startsWith('en')) || voices[0];
-  }
-
-  // Canned audio lives alongside index.html under audio/<id>.mp3.
-  // Relative so preview (/nib/preview/audio/) and prod (/nib/audio/) both work.
-  const NIB_AUDIO_BASE = 'audio/';
-  let currentAudioEl = null;
-
-  // speak() accepts either a string (legacy) or {id, text}. When an id is
-  // present we play the pre-generated Puck clip; otherwise (or on failure)
-  // we fall back to the browser's speechSynthesis so the app still speaks.
-  function speak(line, onend) {
-    // Normalize legacy string input
-    const obj = (typeof line === 'string') ? { id: '', text: line } : (line || { id: '', text: '' });
-    const text = obj.text || '';
-    const id = obj.id || '';
-
-    if (!text && !id) { if (onend) onend(); return; }
-
-    if (!hostOn) {
-      // Host muted — still call onend so flow advances
-      if (onend) setTimeout(onend, Math.min(2500, Math.max(600, text.length * 40)));
-      return;
-    }
-
-    // Stop anything already playing
-    if (currentAudioEl) {
-      try { currentAudioEl.pause(); } catch (e) {}
-      currentAudioEl = null;
-    }
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-
-    // Preferred path: pre-generated mp3
-    if (id) {
-      const audio = new Audio(NIB_AUDIO_BASE + id + '.mp3');
-      audio.volume = 0.95;
-      currentAudioEl = audio;
-      let fired = false;
-      const finish = () => {
-        if (fired) return;
-        fired = true;
-        if (currentAudioEl !== audio) return; // stale — newer clip took over
-        currentAudioEl = null;
-        if (onend) onend();
-      };
-      audio.addEventListener('ended', finish);
-      audio.addEventListener('error', () => {
-        if (currentAudioEl !== audio) return; // stale — a newer clip is playing
-        currentAudioEl = null;
-        fallbackSpeak(text, onend);
-      });
-      const p = audio.play();
-      if (p && typeof p.catch === 'function') {
-        p.catch(() => {
-          if (currentAudioEl !== audio) return; // stale — a newer clip is playing
-          currentAudioEl = null;
-          fallbackSpeak(text, onend);
-        });
-      }
-      return;
-    }
-
-    // No id — use browser TTS
-    fallbackSpeak(text, onend);
-  }
-
-  function fallbackSpeak(text, onend) {
-    if (!text) { if (onend) onend(); return; }
-    if (!('speechSynthesis' in window)) {
-      if (onend) setTimeout(onend, Math.min(2500, Math.max(600, text.length * 40)));
-      return;
-    }
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.02;
-    u.pitch = 1.0;
-    u.volume = 0.95;
-    const v = pickVoice();
-    if (v) u.voice = v;
-    if (onend) u.onend = onend;
-    window.speechSynthesis.speak(u);
   }
 
   function setState(name) {
@@ -2053,7 +1855,10 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     // stateLabel only exists in the dev draft; null-safe for stripped builds
     const labelEl = document.getElementById('stateLabel');
     if (labelEl) labelEl.textContent = name;
-    speak(getHostLine(name));
+    // SFX punctuation for major transitions only
+    if (name === 'listening') playSfx('listen');
+    else if (name === 'thinking') playSfx('think');
+    else if (name === 'delivered') playSfx('done');
     // Auto-copy whenever we land on the delivered stage, regardless of how we got here
     if (name === 'delivered') autoCopyPrompt();
   }
@@ -2121,41 +1926,6 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       handleChatError(e);
     }
   }
-  // Host prompt variations for the Interview stage.
-  // The host does NOT read the clarifying question — that's for the user
-  // to read on screen. The host just nudges them with a short conversational
-  // cue so the interaction feels hosted, not robotic.
-  const interviewHostLines = {
-    first: [
-      "Just a quick clarifying question.",
-      "One thing before I write this — mind answering?",
-      "Quick question for you.",
-      "Mind if I ask you something first?",
-      "Before I get started — a small clarifier.",
-      "One thing I want to check with you."
-    ],
-    followup: [
-      "One more quick thing.",
-      "And another for you.",
-      "One more to go.",
-      "Last quick one.",
-      "Almost there — one more."
-    ]
-  };
-  let lastInterviewHostLine = '';
-  function pickInterviewHostLine() {
-    const poolName = interviewIndex === 0 ? 'first' : 'followup';
-    const pool = interviewHostLines[poolName];
-    let idx;
-    let attempts = 0;
-    do {
-      idx = Math.floor(Math.random() * pool.length);
-      attempts++;
-    } while (pool[idx] === lastInterviewHostLine && attempts < 5);
-    lastInterviewHostLine = pool[idx];
-    return { id: `interview-${poolName}-${idx}`, text: pool[idx] };
-  }
-
   // Show a clarifying question received from the model. Drives the Interview stage.
   function showClarifyingQuestion(questionText) {
     interviewIndex++;
@@ -2166,15 +1936,13 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     document.getElementById('interviewAnswer').value = '';
     stopInterviewListening();
     setState('interview');
-    // Host says a short conversational nudge (NOT the question text).
+    // Open the mic after a short beat so the user can read the question first.
     setTimeout(() => {
-      speak(pickInterviewHostLine(), () => {
-        if (currentStage !== 'interview') return;
-        const ans = document.getElementById('interviewAnswer');
-        if (ans && ans.value.trim().length > 0) return;
-        startInterviewListening();
-      });
-    }, 600);
+      if (currentStage !== 'interview') return;
+      const ans = document.getElementById('interviewAnswer');
+      if (ans && ans.value.trim().length > 0) return;
+      startInterviewListening();
+    }, 800);
   }
 
   // Legacy: kept so any old links still work, but the real path is showClarifyingQuestion.
@@ -2296,8 +2064,6 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     btn.textContent = 'Copied again ✓';
     setTimeout(() => { btn.textContent = orig; }, 1500);
   }
-  function replayHost() { speak(getHostLine(currentStage)); }
-
   // Signup CTA on Delivered — POST /signup, swap to a thank-you state on success.
   async function submitSignup(e) {
     e.preventDefault();
@@ -2428,16 +2194,6 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     }
   }
 
-  document.getElementById('hostToggle').addEventListener('click', () => {
-    hostOn = !hostOn;
-    document.getElementById('hostIcon').textContent = hostOn ? '🔊' : '🔇';
-    document.getElementById('hostLabel').textContent = 'Host voice: ' + (hostOn ? 'on' : 'off');
-    if (!hostOn) {
-      if (currentAudioEl) { try { currentAudioEl.pause(); } catch (e) {} currentAudioEl = null; }
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    }
-  });
-
   // Bottom typing-bar fallback — pressing Enter takes the typed request
   // straight to the Review stage with that text as the transcript.
   const fallbackInput = document.getElementById('fallbackInput');
@@ -2456,29 +2212,7 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   function startExperience() {
     const primerEl = document.getElementById('primer');
     if (primerEl) primerEl.style.display = 'none';
-    // Called from a user gesture — the immediate speak() satisfies browser
-    // autoplay rules. Small delay just smooths the primer dismiss animation.
-    setTimeout(() => speak(getHostLine('idle')), 300);
-  }
-
-  // Fallback for builds where the primer overlay has been stripped
-  // (preview / production): play the greeting on the first user gesture.
-  let nibAudioUnlocked = false;
-  function nibFirstGestureUnlock() {
-    if (nibAudioUnlocked) return;
-    nibAudioUnlocked = true;
-    if (currentStage === 'idle') speak(getHostLine('idle'));
-  }
-  // Only attach this fallback if the primer overlay is absent (i.e., stripped builds)
-  if (!document.getElementById('primer')) {
-    window.addEventListener('click', nibFirstGestureUnlock, { once: true, capture: true });
-    window.addEventListener('keydown', nibFirstGestureUnlock, { once: true, capture: true });
-  }
-
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.onvoiceschanged = () => { voicesLoaded = true; };
-    // Prime the voice list
-    window.speechSynthesis.getVoices();
+    // No audio on idle entry — sounds kick in at listening/thinking/delivered.
   }
 </script>
 
