@@ -1798,9 +1798,10 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
 
   // Mascot SFX — short synthesized tones that punctuate stage transitions.
   // Web Audio API: no files, no network, no autoplay fuss when invoked from
-  // a user gesture. Three kinds are used:
+  // a user gesture. Four kinds are used:
+  //   'start'  — warm ascending triad when the session begins (Enter draft)
   //   'listen' — ascending two-note chirp when we start capturing input
-  //   'think'  — soft single tick when the model starts generating
+  //   'think'  — three soft staccato ticks evoking a pen scratching ideas
   //   'done'   — two-note success chime when the prompt is delivered
   let nibAudioCtx = null;
   function nibGetAudioCtx() {
@@ -1827,11 +1828,19 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     if (!ctx) return;
     if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
     const t = ctx.currentTime;
-    if (kind === 'listen') {
+    if (kind === 'start') {
+      // Warm welcoming arpeggio: C5 → E5 → G5 (major triad)
+      nibTone(ctx, 523,  t,        0.10, 'sine', 0.16);
+      nibTone(ctx, 659,  t + 0.09, 0.10, 'sine', 0.16);
+      nibTone(ctx, 784,  t + 0.18, 0.18, 'sine', 0.18);
+    } else if (kind === 'listen') {
       nibTone(ctx, 880,  t,        0.09, 'sine', 0.18);
       nibTone(ctx, 1319, t + 0.08, 0.13, 'sine', 0.18);
     } else if (kind === 'think') {
-      nibTone(ctx, 520, t, 0.16, 'triangle', 0.13);
+      // Three short staccato pen-scratch ticks in a soft rhythm
+      nibTone(ctx, 392, t,        0.05, 'triangle', 0.12);
+      nibTone(ctx, 440, t + 0.10, 0.05, 'triangle', 0.12);
+      nibTone(ctx, 392, t + 0.20, 0.06, 'triangle', 0.10);
     } else if (kind === 'done') {
       nibTone(ctx, 1047, t,       0.11, 'sine', 0.20);
       nibTone(ctx, 1568, t + 0.1, 0.20, 'sine', 0.20);
@@ -2212,7 +2221,8 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   function startExperience() {
     const primerEl = document.getElementById('primer');
     if (primerEl) primerEl.style.display = 'none';
-    // No audio on idle entry — sounds kick in at listening/thinking/delivered.
+    // Warm welcome chime — also serves as the user-gesture audio unlock.
+    playSfx('start');
   }
 </script>
 
