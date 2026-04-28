@@ -889,6 +889,19 @@
   .mascot-stage:active .mascot-body-wrap { transform: scale(0.96); }
   .mascot-svg { width: 100%; height: 100%; display: block; }
 
+  /* One-shot welcome jump — paired with the start SFX so the user gets
+     a visual + audio confirmation that the app is ready for a prompt. */
+  .mascot-stage.mascot-jump .mascot-body-wrap {
+    animation: m-jump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes m-jump {
+    0%   { transform: translateY(0)    scale(1,    1);    }
+    18%  { transform: translateY(0)    scale(1.1,  0.85); }
+    48%  { transform: translateY(-22px) scale(0.95, 1.1); }
+    72%  { transform: translateY(0)    scale(1.08, 0.92); }
+    100% { transform: translateY(0)    scale(1,    1);    }
+  }
+
   /* Idle */
   .mascot-stage.state-idle .mascot-svg        { animation: m-float 3.2s ease-in-out infinite; }
   .mascot-stage.state-idle .m-body            { transform-box: fill-box; transform-origin: center bottom; animation: m-squish 3.2s ease-in-out infinite; }
@@ -1834,7 +1847,18 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       setTimeout(() => playSfx(kind), 350);
       return;
     }
-    if (kind === 'start') nibStartPlayed = true;
+    if (kind === 'start') {
+      nibStartPlayed = true;
+      // Visual cue: jump the visible mascot in sync with the welcome chime.
+      // We toggle the class off then on so a re-trigger restarts the animation.
+      document.querySelectorAll('.mascot-stage:not(.corner)').forEach(el => {
+        el.classList.remove('mascot-jump');
+        // Force reflow so the next class add restarts the animation
+        void el.offsetWidth;
+        el.classList.add('mascot-jump');
+        setTimeout(() => el.classList.remove('mascot-jump'), 600);
+      });
+    }
     // Schedule 60ms in the future so notes land cleanly even if the audio
     // engine just woke up from a suspended state — avoids the first note
     // getting clipped or dropped.
