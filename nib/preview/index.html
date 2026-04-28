@@ -2124,19 +2124,56 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     if (hint) hint.classList.remove('visible');
     if (stage) { stage.classList.remove('state-listening'); stage.classList.add('state-idle'); }
   }
-  function toggleInterviewListening() {
+  async function toggleInterviewListening() {
     const mic = document.getElementById('interviewMic');
-    if (mic && mic.classList.contains('recording')) {
-      stopInterviewListening();
+    const isRecording = mic && mic.classList.contains('recording');
+    if (isRecording) {
+      // Stop recording and append transcript into the interview answer input.
+      try {
+        const transcript = await nibStopRecordingAndTranscribe();
+        const input = document.getElementById('interviewAnswer');
+        if (transcript && input) {
+          input.value = input.value ? input.value.trim() + ' ' + transcript : transcript;
+        } else if (!transcript) {
+          nibShowError("I didn't catch any audio. Try again.");
+        }
+      } catch (e) {
+        nibShowError(e.message || 'Could not transcribe audio.');
+      } finally {
+        stopInterviewListening();
+      }
     } else {
-      startInterviewListening();
+      // Start recording. UI flips to "recording" only after getUserMedia succeeds.
+      try {
+        await nibStartRecording();
+        startInterviewListening();
+      } catch (e) {
+        nibShowError(e.message || 'Could not access microphone.');
+        stopInterviewListening();
+      }
     }
+  }
+
+  // If the interview mic is hot, stop it and append its transcript to the
+  // input before reading the value. Called by Send / Skip so a recording in
+  // progress doesn't get stranded.
+  async function flushInterviewRecordingIfActive() {
+    const mic = document.getElementById('interviewMic');
+    if (!mic || !mic.classList.contains('recording')) return;
+    try {
+      const transcript = await nibStopRecordingAndTranscribe();
+      const input = document.getElementById('interviewAnswer');
+      if (transcript && input) {
+        input.value = input.value ? input.value.trim() + ' ' + transcript : transcript;
+      }
+    } catch (e) { /* swallow — UI cleanup follows */ }
+    stopInterviewListening();
   }
 
   // Submit the user's answer to the current clarifying question.
   // Sends the conversation back through /chat. Branches the same way as goInterview.
   async function submitInterviewAnswer() {
-    stopInterviewListening();
+    await flushInterviewRecordingIfActive();
     const input = document.getElementById('interviewAnswer');
     const answer = (input?.value || '').trim();
     if (!answer) {
@@ -2158,7 +2195,7 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
 
   // User chose to skip: nudge the model to deliver the prompt now.
   async function goSkipInterview() {
-    stopInterviewListening();
+    await flushInterviewRecordingIfActive();
     nibMessages.push({ role: 'user', content: 'Skip the interview — generate the prompt now with what you have.' });
     setState('thinking');
     try {
