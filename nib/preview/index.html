@@ -2031,6 +2031,8 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
 
   // Idle → Listening: tap mascot to start recording. Tap again → stops, transcribes, lands in Review.
   async function goListening() {
+    // Sync unlock before any await — same reason as toggleInterviewListening.
+    nibUnlockAudio();
     if (currentStage === 'listening') {
       // Already listening: stop, transcribe, advance
       try {
@@ -2137,6 +2139,12 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   let nibPendingInterviewTranscribe = null;
 
   async function toggleInterviewListening() {
+    // Unlock the AudioContext SYNCHRONOUSLY inside the click — before any
+    // await — so the silence detector's analyser sees real samples on the
+    // first recording. Without this, ctx stays 'suspended' through the
+    // first getUserMedia await and the analyser returns zero, causing
+    // the first recording to be treated as silence.
+    nibUnlockAudio();
     const mic = document.getElementById('interviewMic');
     const isRecording = mic && mic.classList.contains('recording');
     if (isRecording) {
