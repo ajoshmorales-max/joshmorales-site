@@ -1786,6 +1786,10 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
    let nibMediaStream = null;
    let nibMediaRecorder = null;
    let nibAudioChunks = [];
+   let nibPeakRms = 0;          // max RMS observed during current recording
+   let nibSilenceTimer = null;  // setInterval id for the RMS polling loop
+   let nibAnalyserNode = null;  // kept so we can disconnect on stop
+   const NIB_SILENCE_RMS_THRESHOLD = 0.015; // anything below this = no real speech
 
    function nibPickMime() {
      const opts = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
@@ -1806,6 +1810,7 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
        throw new Error('Voice input is not supported in this browser.');
      }
      nibAudioChunks = [];
+     nibPeakRms = 0;
      nibMediaStream = await navigator.mediaDevices.getUserMedia({
        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
      });
@@ -1815,6 +1820,35 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
        if (e.data && e.data.size > 0) nibAudioChunks.push(e.data);
      };
      nibMediaRecorder.start();
+     // Silence detector: poll RMS off the live mic stream so we can skip
+     // sending essentially-silent audio to Whisper (which hallucinates stock
+     // phrases and random multilingual gibberish like "Capul & Zeit sympa"
+     // when the input is below the speech threshold).
+     try {
+       const ctx = nibGetAudioCtx();
+       if (ctx) {
+         if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+         const source = ctx.createMediaStreamSource(nibMediaStream);
+         nibAnalyserNode = ctx.createAnalyser();
+         nibAnalyserNode.fftSize = 1024;
+         source.connect(nibAnalyserNode);
+         const buf = new Float32Array(nibAnalyserNode.fftSize);
+         nibSilenceTimer = setInterval(() => {
+           nibAnalyserNode.getFloatTimeDomainData(buf);
+           let sum = 0;
+           for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+           const rms = Math.sqrt(sum / buf.length);
+           if (rms > nibPeakRms) nibPeakRms = rms;
+         }, 100);
+       }
+     } catch (e) {
+       console.warn('[nib-audio] silence detector init failed', e);
+     }
+   }
+
+   function nibStopSilenceDetector() {
+     if (nibSilenceTimer) { clearInterval(nibSilenceTimer); nibSilenceTimer = null; }
+     if (nibAnalyserNode) { try { nibAnalyserNode.disconnect(); } catch (e) {} nibAnalyserNode = null; }
    }
 
    // Stops the recorder, transcribes the captured audio, returns transcript text.
@@ -1825,13 +1859,23 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
        r.onstop = async () => {
          const mime = r.mimeType || nibPickMime() || 'audio/webm';
          const blob = new Blob(nibAudioChunks, { type: mime });
+         const peak = nibPeakRms;
+         nibStopSilenceDetector();
          nibStopStream();
+         console.log('[nib-audio] recording stopped, peak RMS=', peak.toFixed(4));
          if (!blob.size) return reject(new Error('No audio captured.'));
+         // Pre-empt Whisper hallucinations: if the loudest sample over the
+         // recording window never crossed the speech threshold, skip the API
+         // entirely and return empty so the caller shows "no audio detected".
+         if (peak < NIB_SILENCE_RMS_THRESHOLD) {
+           console.log('[nib-audio] below silence threshold, skipping transcription');
+           return resolve('');
+         }
          try { resolve(await nibTranscribe(blob, mime)); }
          catch (e) { reject(e); }
        };
-       r.onerror = e => { nibStopStream(); reject(new Error('Microphone error.')); };
-       try { r.stop(); } catch (e) { nibStopStream(); reject(e); }
+       r.onerror = e => { nibStopSilenceDetector(); nibStopStream(); reject(new Error('Microphone error.')); };
+       try { r.stop(); } catch (e) { nibStopSilenceDetector(); nibStopStream(); reject(e); }
      });
    }
 
