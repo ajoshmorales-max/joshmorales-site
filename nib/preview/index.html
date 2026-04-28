@@ -1885,11 +1885,11 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       src.connect(ctx.destination);
       src.start(0);
     } catch (e) {
-      if (window.__nibDbg) console.warn('[nib-audio] silent buffer failed', e);
+      console.warn('[nib-audio] silent buffer failed', e);
     }
     if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
     nibAudioUnlocked = true;
-    if (window.__nibDbg) console.log('[nib-audio] unlock fired, state=', ctx.state);
+    console.log('[nib-audio] unlock fired, state=', ctx.state);
     return true;
   }
   function nibTone(ctx, freq, startAt, dur, type, peak) {
@@ -1902,7 +1902,7 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     gain.gain.exponentialRampToValueAtTime(0.0005, startAt + dur);
     osc.connect(gain).connect(ctx.destination);
     try { osc.start(startAt); } catch (e) {
-      if (window.__nibDbg) console.warn('[nib-audio] osc.start failed', e);
+      console.warn('[nib-audio] osc.start failed', e);
     }
     osc.stop(startAt + dur + 0.02);
   }
@@ -1953,7 +1953,7 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
         setTimeout(() => el.classList.remove('mascot-jump'), 600);
       });
     }
-    if (window.__nibDbg) console.log('[nib-audio] playSfx', kind, 'state=', ctx.state);
+    console.log('[nib-audio] playSfx', kind, 'state=', ctx.state);
     // Schedule SYNCHRONOUSLY regardless of state. Critical for iOS Safari:
     // the .then(resume) microtask path loses user-gesture activation, so
     // we schedule oscillators here-and-now and let them auto-play once the
@@ -2343,20 +2343,35 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     playSfx('start');
   }
 
-  // Fire 'start' on first user gesture. Browsers block autoplay until then.
-  // CRITICAL: nibUnlockAudio() runs SYNCHRONOUSLY inside the gesture handler
-  // — it plays a 1-sample silent buffer that flips the audio output on. The
-  // welcome chime then schedules into a fully unlocked context.
-  (function armStartSfx() {
-    const onFirstGesture = () => {
+  // Bind audio unlock + welcome chime DIRECTLY to the target onclicks of the
+  // visible interactive elements. This mirrors the draft's primer-button path
+  // (real onclick on a real element), which iOS Safari treats as a stronger
+  // user-gesture activation than a document-level capture-phase listener.
+  // We bind on DOMContentLoaded so the elements exist.
+  function nibArmTargetUnlocks() {
+    const triggers = document.querySelectorAll(
+      '.mascot-stage[onclick], .mic-mini, .bottom-bar input, #fallbackInput'
+    );
+    const handler = () => {
       nibUnlockAudio();
       if (!nibStartPlayed) playSfx('start');
-      ['pointerdown','touchstart','click','keydown'].forEach(e =>
-        document.removeEventListener(e, onFirstGesture, true));
     };
-    ['pointerdown','touchstart','click','keydown'].forEach(e =>
-      document.addEventListener(e, onFirstGesture, true));
-  })();
+    triggers.forEach(el => {
+      el.addEventListener('pointerdown', handler, { once: false, capture: false });
+      el.addEventListener('touchstart',  handler, { once: false, capture: false, passive: true });
+      el.addEventListener('click',       handler, { once: false, capture: false });
+    });
+    // Also bind to body as last-resort fallback (e.g. user taps empty area first)
+    document.body.addEventListener('pointerdown', handler, { once: false, capture: false });
+    document.body.addEventListener('touchstart',  handler, { once: false, capture: false, passive: true });
+    document.body.addEventListener('click',       handler, { once: false, capture: false });
+    console.log('[nib-audio] target unlocks armed on', triggers.length, 'elements + body');
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', nibArmTargetUnlocks, { once: true });
+  } else {
+    nibArmTargetUnlocks();
+  }
 </script>
 
 </body>
