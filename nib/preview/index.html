@@ -2260,39 +2260,45 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     playSfx('start');
   }
 
-  // Fire 'start' on app load. Browsers block autoplay until a user gesture,
-  // so: attempt immediately; if the audio context stays suspended, arm a
-  // one-time listener on the first interaction anywhere on the page.
+  // Fire 'start' on app load. Browsers block autoplay until a user gesture.
+  // CRITICAL for iOS Safari: scheduling must happen SYNCHRONOUSLY inside the
+  // gesture handler — never `await` before calling playSfx, or the user-gesture
+  // token expires and audio stays muted forever.
   (function armStartSfx() {
-    async function tryPlayStart() {
+    function tryPlayStart() {
       if (nibStartPlayed) return true;
       const ctx = nibGetAudioCtx();
       if (!ctx) return false;
+      // Fire-and-forget resume. Don't await — that breaks the iOS gesture chain.
       if (ctx.state === 'suspended') {
-        try { await ctx.resume(); } catch (e) { return false; }
+        try { ctx.resume(); } catch (e) {}
       }
-      if (ctx.state !== 'running') return false;
+      // Schedule synchronously. On iOS, oscillator.start() called inside a
+      // user-gesture handler is what actually unlocks the audio output, even
+      // if ctx.state still reports 'suspended' at this exact moment.
       playSfx('start');
       return true;
     }
-    // Attempt on load (works if autoplay is permitted for the site)
+    // Attempt on load (only works if the site has autoplay permission)
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => { tryPlayStart(); }, { once: true });
+      document.addEventListener('DOMContentLoaded', tryPlayStart, { once: true });
     } else {
       tryPlayStart();
     }
-    // Fallback: first user gesture anywhere triggers it
-    const onFirstGesture = async () => {
-      const ok = await tryPlayStart();
-      if (ok) {
+    // Fallback: first user gesture anywhere triggers it. Cover all mobile + desktop
+    // gesture paths because browsers diverge on which fires first.
+    const onFirstGesture = () => {
+      if (tryPlayStart()) {
         document.removeEventListener('pointerdown', onFirstGesture, true);
-        document.removeEventListener('keydown', onFirstGesture, true);
         document.removeEventListener('touchstart', onFirstGesture, true);
+        document.removeEventListener('click', onFirstGesture, true);
+        document.removeEventListener('keydown', onFirstGesture, true);
       }
     };
     document.addEventListener('pointerdown', onFirstGesture, true);
-    document.addEventListener('keydown', onFirstGesture, true);
     document.addEventListener('touchstart', onFirstGesture, true);
+    document.addEventListener('click', onFirstGesture, true);
+    document.addEventListener('keydown', onFirstGesture, true);
   })();
 </script>
 
