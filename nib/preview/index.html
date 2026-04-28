@@ -2237,26 +2237,27 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   // so: attempt immediately; if the audio context stays suspended, arm a
   // one-time listener on the first interaction anywhere on the page.
   (function armStartSfx() {
-    function tryPlayStart() {
+    async function tryPlayStart() {
       if (nibStartPlayed) return true;
       const ctx = nibGetAudioCtx();
       if (!ctx) return false;
-      try { ctx.resume(); } catch (e) {}
-      if (ctx.state === 'running') {
-        playSfx('start');
-        return true;
+      if (ctx.state === 'suspended') {
+        try { await ctx.resume(); } catch (e) { return false; }
       }
-      return false;
+      if (ctx.state !== 'running') return false;
+      playSfx('start');
+      return true;
     }
     // Attempt on load (works if autoplay is permitted for the site)
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', tryPlayStart, { once: true });
+      document.addEventListener('DOMContentLoaded', () => { tryPlayStart(); }, { once: true });
     } else {
       tryPlayStart();
     }
     // Fallback: first user gesture anywhere triggers it
-    const onFirstGesture = () => {
-      if (tryPlayStart()) {
+    const onFirstGesture = async () => {
+      const ok = await tryPlayStart();
+      if (ok) {
         document.removeEventListener('pointerdown', onFirstGesture, true);
         document.removeEventListener('keydown', onFirstGesture, true);
         document.removeEventListener('touchstart', onFirstGesture, true);
