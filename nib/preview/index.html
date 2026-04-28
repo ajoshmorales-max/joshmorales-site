@@ -1936,23 +1936,8 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     // If 'start' hasn't played yet and we're about to play something else,
     // fire 'start' synchronously now (preserves iOS user-gesture context),
     // then schedule the original sound after the welcome chime finishes.
-    if (kind !== 'start' && !nibStartPlayed) {
-      playSfx('start');
-      setTimeout(() => playSfx(kind), 350);
-      return;
-    }
-    if (kind === 'start') {
-      if (nibStartPlayed) return; // already done
-      nibStartPlayed = true;
-      // Visual cue: jump the visible mascot in sync with the welcome chime.
-      // Animation runs unconditionally — even if audio fails to unlock.
-      document.querySelectorAll('.mascot-stage:not(.corner)').forEach(el => {
-        el.classList.remove('mascot-jump');
-        void el.offsetWidth; // restart the animation
-        el.classList.add('mascot-jump');
-        setTimeout(() => el.classList.remove('mascot-jump'), 600);
-      });
-    }
+    if (kind === 'start' && nibStartPlayed) return; // welcome chime already played
+    if (kind === 'start') nibStartPlayed = true;
     console.log('[nib-audio] playSfx', kind, 'state=', ctx.state);
     // Schedule SYNCHRONOUSLY regardless of state. Critical for iOS Safari:
     // the .then(resume) microtask path loses user-gesture activation, so
@@ -2343,34 +2328,23 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     playSfx('start');
   }
 
-  // Bind audio unlock + welcome chime DIRECTLY to the target onclicks of the
-  // visible interactive elements. This mirrors the draft's primer-button path
-  // (real onclick on a real element), which iOS Safari treats as a stronger
-  // user-gesture activation than a document-level capture-phase listener.
-  // We bind on DOMContentLoaded so the elements exist.
-  function nibArmTargetUnlocks() {
-    const triggers = document.querySelectorAll(
-      '.mascot-stage[onclick], .mic-mini, .bottom-bar input, #fallbackInput'
-    );
-    const handler = () => {
-      nibUnlockAudio();
-      if (!nibStartPlayed) playSfx('start');
-    };
-    triggers.forEach(el => {
-      el.addEventListener('pointerdown', handler, { once: false, capture: false });
-      el.addEventListener('touchstart',  handler, { once: false, capture: false, passive: true });
-      el.addEventListener('click',       handler, { once: false, capture: false });
+  // Session-ready signal: jump the mascot once on load. Audio chime on load
+  // is blocked by browser autoplay policy on most refreshes, so the animation
+  // alone is the "I'm ready" cue. Mark nibStartPlayed = true so playSfx('start')
+  // is suppressed forever — the ready signal fires once per page load only.
+  function nibPlayReadySignal() {
+    nibStartPlayed = true;
+    document.querySelectorAll('.mascot-stage:not(.corner)').forEach(el => {
+      el.classList.remove('mascot-jump');
+      void el.offsetWidth; // restart the animation
+      el.classList.add('mascot-jump');
+      setTimeout(() => el.classList.remove('mascot-jump'), 600);
     });
-    // Also bind to body as last-resort fallback (e.g. user taps empty area first)
-    document.body.addEventListener('pointerdown', handler, { once: false, capture: false });
-    document.body.addEventListener('touchstart',  handler, { once: false, capture: false, passive: true });
-    document.body.addEventListener('click',       handler, { once: false, capture: false });
-    console.log('[nib-audio] target unlocks armed on', triggers.length, 'elements + body');
   }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', nibArmTargetUnlocks, { once: true });
+    document.addEventListener('DOMContentLoaded', nibPlayReadySignal, { once: true });
   } else {
-    nibArmTargetUnlocks();
+    nibPlayReadySignal();
   }
 </script>
 
