@@ -1704,7 +1704,17 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
      const form = new FormData();
      const ext = (mimeType || '').includes('mp4') ? 'm4a' : 'webm';
      form.append('audio', blob, `audio.${ext}`);
-     const res = await fetch(`${NIB_API}/transcribe`, { method: 'POST', body: form });
+     const ctrl = new AbortController();
+     const timeoutId = setTimeout(() => ctrl.abort(), 30000);
+     let res;
+     try {
+       res = await fetch(`${NIB_API}/transcribe`, { method: 'POST', body: form, signal: ctrl.signal });
+     } catch (e) {
+       clearTimeout(timeoutId);
+       if (e.name === 'AbortError') throw new Error('Transcription timed out. Try again.');
+       throw new Error('Network error — check your connection and try again.');
+     }
+     clearTimeout(timeoutId);
      if (!res.ok) {
        const e = await res.json().catch(() => ({}));
        throw new Error(e?.error?.message || e?.error || `Transcription failed (${res.status})`);
@@ -2124,24 +2134,27 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     if (hint) hint.classList.remove('visible');
     if (stage) { stage.classList.remove('state-listening'); stage.classList.add('state-idle'); }
   }
+  let nibPendingInterviewTranscribe = null;
+
   async function toggleInterviewListening() {
     const mic = document.getElementById('interviewMic');
     const isRecording = mic && mic.classList.contains('recording');
     if (isRecording) {
-      // Stop recording and append transcript into the interview answer input.
-      try {
-        const transcript = await nibStopRecordingAndTranscribe();
-        const input = document.getElementById('interviewAnswer');
-        if (transcript && input) {
-          input.value = input.value ? input.value.trim() + ' ' + transcript : transcript;
-        } else if (!transcript) {
-          nibShowError("I didn't catch any audio. Try again.");
-        }
-      } catch (e) {
-        nibShowError(e.message || 'Could not transcribe audio.');
-      } finally {
-        stopInterviewListening();
-      }
+      // Free the UI immediately so the user gets feedback even if /transcribe
+      // is slow. The transcribe runs in the background; result lands in the
+      // input when it arrives. Send/Skip awaits this via flush helper.
+      stopInterviewListening();
+      nibPendingInterviewTranscribe = nibStopRecordingAndTranscribe()
+        .then(transcript => {
+          const input = document.getElementById('interviewAnswer');
+          if (transcript && input) {
+            input.value = input.value ? input.value.trim() + ' ' + transcript : transcript;
+          } else if (!transcript) {
+            nibShowError("I didn't catch any audio. Try again.");
+          }
+        })
+        .catch(e => nibShowError(e.message || 'Could not transcribe audio.'))
+        .finally(() => { nibPendingInterviewTranscribe = null; });
     } else {
       // Start recording. UI flips to "recording" only after getUserMedia succeeds.
       try {
@@ -2159,15 +2172,22 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
   // progress doesn't get stranded.
   async function flushInterviewRecordingIfActive() {
     const mic = document.getElementById('interviewMic');
-    if (!mic || !mic.classList.contains('recording')) return;
-    try {
-      const transcript = await nibStopRecordingAndTranscribe();
-      const input = document.getElementById('interviewAnswer');
-      if (transcript && input) {
-        input.value = input.value ? input.value.trim() + ' ' + transcript : transcript;
-      }
-    } catch (e) { /* swallow — UI cleanup follows */ }
-    stopInterviewListening();
+    if (mic && mic.classList.contains('recording')) {
+      // Mic still hot — stop and grab transcript inline.
+      stopInterviewListening();
+      try {
+        const transcript = await nibStopRecordingAndTranscribe();
+        const input = document.getElementById('interviewAnswer');
+        if (transcript && input) {
+          input.value = input.value ? input.value.trim() + ' ' + transcript : transcript;
+        }
+      } catch (e) { /* swallow — UI is already reset */ }
+      return;
+    }
+    // Mic was already stopped but transcribe might still be in flight.
+    if (nibPendingInterviewTranscribe) {
+      try { await nibPendingInterviewTranscribe; } catch (e) {}
+    }
   }
 
   // Submit the user's answer to the current clarifying question.
