@@ -1835,7 +1835,10 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       return;
     }
     if (kind === 'start') nibStartPlayed = true;
-    const t = ctx.currentTime;
+    // Schedule 60ms in the future so notes land cleanly even if the audio
+    // engine just woke up from a suspended state — avoids the first note
+    // getting clipped or dropped.
+    const t = ctx.currentTime + 0.06;
     if (kind === 'start') {
       // Warm welcoming arpeggio: C5 → E5 → G5 (major triad)
       nibTone(ctx, 523,  t,        0.10, 'sine', 0.16);
