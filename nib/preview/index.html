@@ -1954,18 +1954,15 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       });
     }
     if (window.__nibDbg) console.log('[nib-audio] playSfx', kind, 'state=', ctx.state);
-    // If the context is running, schedule immediately. If still suspended
-    // (rare after unlock, but possible), resume first then schedule.
-    if (ctx.state === 'running') {
-      _nibScheduleSfx(ctx, kind);
-    } else {
-      ctx.resume().then(() => {
-        if (window.__nibDbg) console.log('[nib-audio] resumed, scheduling', kind);
-        _nibScheduleSfx(ctx, kind);
-      }).catch(err => {
-        if (window.__nibDbg) console.warn('[nib-audio] resume failed', err);
-      });
+    // Schedule SYNCHRONOUSLY regardless of state. Critical for iOS Safari:
+    // the .then(resume) microtask path loses user-gesture activation, so
+    // we schedule oscillators here-and-now and let them auto-play once the
+    // fire-and-forget resume() settles. Their startAt is ctx.currentTime + 0.06,
+    // which remains valid whether or not the context is running yet.
+    if (ctx.state === 'suspended') {
+      try { ctx.resume(); } catch (e) {}
     }
+    _nibScheduleSfx(ctx, kind);
   }
 
   function setState(name) {
