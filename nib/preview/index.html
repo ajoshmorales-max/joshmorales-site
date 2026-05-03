@@ -1796,10 +1796,6 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
    let nibMediaStream = null;
    let nibMediaRecorder = null;
    let nibAudioChunks = [];
-   let nibPeakRms = 0;          // max RMS observed during current recording
-   let nibSilenceTimer = null;  // setInterval id for the RMS polling loop
-   let nibAnalyserNode = null;  // kept so we can disconnect on stop
-   const NIB_SILENCE_RMS_THRESHOLD = 0.015; // anything below this = no real speech
 
    function nibPickMime() {
      const opts = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
@@ -1820,7 +1816,6 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
        throw new Error('Voice input is not supported in this browser.');
      }
      nibAudioChunks = [];
-     nibPeakRms = 0;
      nibMediaStream = await navigator.mediaDevices.getUserMedia({
        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
      });
@@ -1830,38 +1825,13 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
        if (e.data && e.data.size > 0) nibAudioChunks.push(e.data);
      };
      nibMediaRecorder.start();
-     // Silence detector: poll RMS off the live mic stream so we can skip
-     // sending essentially-silent audio to Whisper (which hallucinates stock
-     // phrases and random multilingual gibberish like "Capul & Zeit sympa"
-     // when the input is below the speech threshold).
-     try {
-       const ctx = nibGetAudioCtx();
-       if (ctx) {
-         if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
-         const source = ctx.createMediaStreamSource(nibMediaStream);
-         nibAnalyserNode = ctx.createAnalyser();
-         nibAnalyserNode.fftSize = 1024;
-         source.connect(nibAnalyserNode);
-         const buf = new Float32Array(nibAnalyserNode.fftSize);
-         nibSilenceTimer = setInterval(() => {
-           nibAnalyserNode.getFloatTimeDomainData(buf);
-           let sum = 0;
-           for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
-           const rms = Math.sqrt(sum / buf.length);
-           if (rms > nibPeakRms) nibPeakRms = rms;
-         }, 100);
-       }
-     } catch (e) {
-       console.warn('[nib-audio] silence detector init failed', e);
-     }
-   }
-
-   function nibStopSilenceDetector() {
-     if (nibSilenceTimer) { clearInterval(nibSilenceTimer); nibSilenceTimer = null; }
-     if (nibAnalyserNode) { try { nibAnalyserNode.disconnect(); } catch (e) {} nibAnalyserNode = null; }
    }
 
    // Stops the recorder, transcribes the captured audio, returns transcript text.
+   // Relies on the Whisper hallucination regex filter (nibFilterHallucination)
+   // instead of a live AnalyserNode silence detector — the AnalyserNode approach
+   // created a MediaStreamSource that competed with MediaRecorder for the mic
+   // stream, causing the first recording to capture silence on mobile browsers.
    function nibStopRecordingAndTranscribe() {
      return new Promise((resolve, reject) => {
        const r = nibMediaRecorder;
@@ -1869,29 +1839,14 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
        r.onstop = async () => {
          const mime = r.mimeType || nibPickMime() || 'audio/webm';
          const blob = new Blob(nibAudioChunks, { type: mime });
-         const peak = nibPeakRms;
-         nibStopSilenceDetector();
          nibStopStream();
-         console.log('[nib-audio] recording stopped, peak RMS=', peak.toFixed(4));
+         if (window.__nibDbg) console.log('[nib-audio] recording stopped, chunks=', nibAudioChunks.length, 'blob=', blob.size, 'bytes');
          if (!blob.size) return reject(new Error('No audio captured.'));
-         // Pre-empt Whisper hallucinations: if peak crossed (0, threshold),
-         // the detector saw real samples that never reached speech volume —
-         // skip the API. If peak === 0 exactly, the analyser was reading from
-         // a suspended/broken AudioContext (common on the first recording
-         // before audio is fully unlocked) — DON'T trust it; transcribe and
-         // let the regex hallucination filter handle the result.
-         if (peak > 0 && peak < NIB_SILENCE_RMS_THRESHOLD) {
-           console.log('[nib-audio] below silence threshold, skipping transcription');
-           return resolve('');
-         }
-         if (peak === 0) {
-           console.log('[nib-audio] peak=0 (analyser likely broken); transcribing anyway');
-         }
          try { resolve(await nibTranscribe(blob, mime)); }
          catch (e) { reject(e); }
        };
-       r.onerror = e => { nibStopSilenceDetector(); nibStopStream(); reject(new Error('Microphone error.')); };
-       try { r.stop(); } catch (e) { nibStopSilenceDetector(); nibStopStream(); reject(e); }
+       r.onerror = e => { nibStopStream(); reject(new Error('Microphone error.')); };
+       try { r.stop(); } catch (e) { nibStopStream(); reject(e); }
      });
    }
 
@@ -1945,11 +1900,11 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
       src.connect(ctx.destination);
       src.start(0);
     } catch (e) {
-      console.warn('[nib-audio] silent buffer failed', e);
+      if (window.__nibDbg) console.warn('[nib-audio] silent buffer failed', e);
     }
     if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
     nibAudioUnlocked = true;
-    console.log('[nib-audio] unlock fired, state=', ctx.state);
+    if (window.__nibDbg) console.log('[nib-audio] unlock fired, state=', ctx.state);
     return true;
   }
   function nibTone(ctx, freq, startAt, dur, type, peak) {
@@ -1962,7 +1917,7 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     gain.gain.exponentialRampToValueAtTime(0.0005, startAt + dur);
     osc.connect(gain).connect(ctx.destination);
     try { osc.start(startAt); } catch (e) {
-      console.warn('[nib-audio] osc.start failed', e);
+      if (window.__nibDbg) console.warn('[nib-audio] osc.start failed', e);
     }
     osc.stop(startAt + dur + 0.02);
   }
@@ -1998,7 +1953,7 @@ If a user references one of these by name or obvious abbreviation, your clarifyi
     // then schedule the original sound after the welcome chime finishes.
     if (kind === 'start' && nibStartPlayed) return; // welcome chime already played
     if (kind === 'start') nibStartPlayed = true;
-    console.log('[nib-audio] playSfx', kind, 'state=', ctx.state);
+    if (window.__nibDbg) console.log('[nib-audio] playSfx', kind, 'state=', ctx.state);
     // Schedule SYNCHRONOUSLY regardless of state. Critical for iOS Safari:
     // the .then(resume) microtask path loses user-gesture activation, so
     // we schedule oscillators here-and-now and let them auto-play once the
