@@ -1,18 +1,2434 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/nib/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Nib — turn messy ideas into optimized AI prompts. Voice or text input, instant results. By Josh Morales." />
-    <title>Nib — AI Prompt Optimizer | Josh Morales</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/nib/assets/index-ubQAi-1x.js"></script>
-    <link rel="stylesheet" crossorigin href="/nib/assets/index-BwMdWgMA.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nib — UX Preview</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Preview of the upcoming Nib UX redesign.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2EFE8;
+    --bg-dark: #1E1C1A;
+    --paper: #FDFCF8;
+    --text-main: #1C1A17;
+    --text-secondary: #5C564D;
+    --text-muted: #9A9388;
+    --text-inverse: #E8E5DE;
+    --accent: #0D9488;
+    --accent-light: #14B8A6;
+    --border: rgba(28, 26, 23, 0.08);
+
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-ui: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text-main);
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  header {
+    flex: 0 0 auto;
+    padding: 0.9rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-dark);
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 400;
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+    letter-spacing: -0.02em;
+    color: var(--text-inverse);
+  }
+  .logo-wordmark { display: inline-block; }
+  .logo-mascot {
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    margin-left: 3px;
+    position: relative;
+    top: 3px;
+  }
+  .logo-mascot .lm-body {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: logo-squish 3.2s ease-in-out infinite;
+  }
+  .logo-mascot .lm-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: logo-blink 5.5s ease-in-out infinite;
+  }
+  @keyframes logo-squish {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    50% { transform: scaleY(1.02) translateY(-1px); }
+  }
+  @keyframes logo-blink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    93%, 96% { transform: scaleY(0.1); }
+  }
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+
+  /* Info button + tooltip */
+  .info-wrap { position: relative; }
+  .btn-info {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .btn-info:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.8); }
+  .info-tooltip {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 300px;
+    background: var(--paper);
+    border: 1px solid rgba(28, 26, 23, 0.08);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 50;
+  }
+  .info-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 12px;
+    width: 12px;
+    height: 12px;
+    background: var(--paper);
+    border-left: 1px solid rgba(28, 26, 23, 0.08);
+    border-top: 1px solid rgba(28, 26, 23, 0.08);
+    transform: rotate(45deg);
+  }
+  .info-wrap:hover .info-tooltip,
+  .info-wrap:focus-within .info-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .info-tooltip strong {
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  main {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .stage {
+    width: 100%;
+    max-width: 640px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    animation: fadeIn 0.5s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stage-prompt {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2.2rem;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+    text-align: center;
+    line-height: 1.15;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .mic-button {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 8px 32px rgba(13, 148, 136, 0.3);
+    position: relative;
+  }
+  .mic-button svg { width: 52px; height: 52px; }
+  .mic-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(13, 148, 136, 0.4);
+  }
+  .mic-button.listening {
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .mic-button.listening::before {
+    content: '';
+    position: absolute;
+    inset: -16px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    opacity: 0.5;
+    animation: ripple 1.6s ease-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.3); opacity: 0; }
+  }
+
+  .mic-label {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .waveform {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 48px;
+  }
+  .waveform span {
+    display: block;
+    width: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: wave 1s ease-in-out infinite;
+  }
+  .waveform span:nth-child(1) { animation-delay: 0.0s; }
+  .waveform span:nth-child(2) { animation-delay: 0.1s; }
+  .waveform span:nth-child(3) { animation-delay: 0.2s; }
+  .waveform span:nth-child(4) { animation-delay: 0.3s; }
+  .waveform span:nth-child(5) { animation-delay: 0.4s; }
+  .waveform span:nth-child(6) { animation-delay: 0.5s; }
+  .waveform span:nth-child(7) { animation-delay: 0.4s; }
+  .waveform span:nth-child(8) { animation-delay: 0.3s; }
+  .waveform span:nth-child(9) { animation-delay: 0.2s; }
+  .waveform span:nth-child(10) { animation-delay: 0.1s; }
+  @keyframes wave {
+    0%, 100% { height: 8px; }
+    50% { height: 42px; }
+  }
+
+  .transcript-live {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 520px;
+    text-align: center;
+    min-height: 2rem;
+    line-height: 1.5;
+  }
+
+  .said-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--font-ui);
+    font-weight: 400;
+  }
+  .said-text {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--text-main);
+    max-width: 520px;
+    text-align: center;
+    font-style: normal;
+    line-height: 1.35;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+
+  .thinking-dots {
+    display: flex;
+    gap: 10px;
+    margin-top: 0.5rem;
+  }
+  .thinking-dots span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: thinking 1.4s ease-in-out infinite;
+  }
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes thinking {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  .prompt-card-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 0.6rem;
+    font-family: var(--font-ui);
+  }
+  .prompt-card pre {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--text-main);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: var(--paper);
+    border: none;
+    border-radius: 6px;
+    padding: 1.2rem 1.4rem;
+    margin: 0;
+    cursor: text;
+    outline: none;
+    transition: box-shadow 0.15s;
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.06), inset 0 0 0 1px rgba(28, 26, 23, 0.04), 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .prompt-card pre:hover {
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.07), inset 0 0 0 1px rgba(28, 26, 23, 0.05), 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .prompt-card pre:focus {
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.06), inset 0 0 0 1px rgba(13, 148, 136, 0.2), 0 0 0 3px rgba(13, 148, 136, 0.06);
+  }
+
+  /* Collapsible preview wrapper — compact by default, expands on click */
+  .prompt-preview {
+    position: relative;
+    max-height: 100px;
+    overflow: hidden;
+    cursor: pointer;
+    margin: 0;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .prompt-preview::after {
+    content: 'Tap to expand & edit ↓';
+    position: absolute;
+    left: 1px; right: 1px; bottom: 1px;
+    padding: 2rem 0 0.7rem;
+    background: linear-gradient(to bottom, rgba(253, 252, 248, 0) 0%, var(--paper) 70%);
+    border-radius: 0 0 4px 4px;
+    text-align: center;
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .prompt-preview:hover::after { color: var(--accent); }
+  .prompt-preview.expanded {
+    max-height: 380px;
+    overflow-y: auto;
+    cursor: text;
+  }
+  .prompt-preview.expanded::after { opacity: 0; }
+  .prompt-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: var(--bg-dark);
+    color: var(--text-inverse);
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem 1.5rem;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    font-weight: 510;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: #2A2825; transform: translateY(-1px); }
+  .btn-primary.copied {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-secondary {
+    background: rgba(28, 26, 23, 0.05);
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem 1.25rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 510;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: rgba(28, 26, 23, 0.09); color: var(--text-main); }
+
+  /* Bottom fallback bar — in-flow at the bottom of the viewport */
+  .bottom-bar {
+    flex: 0 0 auto;
+    padding: 0.85rem 2rem 1.25rem;
+    background: var(--bg);
+    display: flex;
+    justify-content: center;
+  }
+  .bottom-bar-inner {
+    display: flex;
+    gap: 0.6rem;
+    max-width: 540px;
+    width: 100%;
+  }
+  .mini-input {
+    flex: 1;
+    padding: 0.85rem 1.1rem;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    background: var(--paper);
+    color: var(--text-main);
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.05), 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .mini-input::placeholder { color: var(--text-muted); }
+  .mini-input:focus { outline: none; box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.05), 0 0 0 2px rgba(13, 148, 136, 0.1), 0 0 0 1px rgba(13, 148, 136, 0.2); }
+  .mic-mini {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: var(--accent);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
+  }
+  .mic-mini:hover { background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3); }
+  .mic-mini svg { width: 20px; height: 20px; }
+
+  /* Stage indicator chip */
+  .state-indicator {
+    position: fixed;
+    top: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.35rem 0.875rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .state-indicator strong {
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-left: 0.25rem;
+  }
+
+  /* Dev controls (draft-only — would not ship) */
+  .dev-controls {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #1A1A2E;
+    color: white;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    opacity: 0.94;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 100;
+  }
+  .dev-controls strong {
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    opacity: 0.6;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+  .dev-controls button {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.15s;
+  }
+  .dev-controls button:hover { background: rgba(255,255,255,0.1); }
+  .dev-controls .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+    margin: 0.3rem 0;
+  }
+
+  /* Editable transcript card (review stage) */
+  /* ============================================================
+     Content blocks — no cards, no containers.
+     The text IS the UI. Use whitespace + hairlines, not boxes.
+     ============================================================ */
+  .transcript-card,
+  .interview-card,
+  .prompt-card {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* Transcript — clear writing surface, not a form field */
+  .transcript-card-label { display: none; }
+  .transcript-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 0;
+    font-weight: 400;
+  }
+  .transcript-hint svg { width: 14px; height: 14px; }
+  .transcript-editable {
+    width: 100%;
+    min-height: 100px;
+    max-height: 220px;
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+    color: var(--text-main);
+    background: var(--paper);
+    border: none;
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem;
+    resize: none;
+    cursor: text;
+    overflow-y: auto;
+    transition: box-shadow 0.15s;
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.06), inset 0 0 0 1px rgba(28, 26, 23, 0.04), 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .transcript-editable:hover {
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.07), inset 0 0 0 1px rgba(28, 26, 23, 0.05), 0 1px 0 rgba(255,255,255,0.7);
+  }
+  .transcript-editable:focus {
+    outline: none;
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.06), inset 0 0 0 1px rgba(13, 148, 136, 0.2), 0 0 0 3px rgba(13, 148, 136, 0.06);
+  }
+
+  /* Interview */
+  .interview-progress {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 0.3rem;
+    font-family: var(--font-ui);
+  }
+  .interview-label { display: none; }
+  .interview-question {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--text-main);
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    margin-bottom: 0.4rem;
+    max-width: 560px;
+  }
+  .interview-answer-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    margin-bottom: 0;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .interview-input {
+    flex: 1;
+    padding: 0.6rem 0;
+    border: none;
+    border-radius: 0;
+    font-family: var(--font-ui);
+    font-size: 1.05rem;
+    font-weight: 400;
+    background: transparent;
+    color: var(--text-main);
+  }
+  .interview-input::placeholder { color: var(--text-muted); }
+  .interview-input:focus { outline: none; box-shadow: none; }
+  .interview-mic {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: var(--accent);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
+  }
+  .interview-mic:hover {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
+  }
+  .interview-mic svg { width: 18px; height: 18px; }
+
+  /* Active-recording state — pulsing teal button with ring emanation */
+  .interview-mic.recording {
+    background: var(--accent);
+    color: white;
+    animation: mic-pulse 1.4s ease-in-out infinite;
+  }
+  .interview-mic.recording::before,
+  .interview-mic.recording::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    border: 2px solid rgba(20, 184, 166, 0.5);
+    animation: mic-ring-out 1.6s ease-out infinite;
+    pointer-events: none;
+  }
+  .interview-mic.recording::after { animation-delay: 0.8s; }
+  @keyframes mic-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.35); }
+    50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(13, 148, 136, 0); }
+  }
+  @keyframes mic-ring-out {
+    0% { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(1.7); opacity: 0; }
+  }
+
+  /* Interview-listening label */
+  .interview-listening-hint {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-top: 0.75rem;
+  }
+  .interview-listening-hint.visible { display: inline-flex; }
+  .interview-listening-hint::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: mic-dot-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes mic-dot-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  .interview-skip {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 0.4rem 0;
+    text-decoration: none;
+  }
+  .interview-skip:hover { color: var(--text-main); }
+
+  /* Outlined buttons — clear affordance, minimal chrome */
+  .btn-text {
+    background: rgba(28, 26, 23, 0.05);
+    border: none;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    font-weight: 510;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.7rem 1.25rem;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    line-height: 1;
+  }
+  .btn-text:hover {
+    background: rgba(28, 26, 23, 0.09);
+    color: var(--text-main);
+  }
+  .btn-text.primary {
+    border-color: var(--bg-dark);
+    color: var(--text-inverse);
+    background: var(--bg-dark);
+  }
+  .btn-text.primary:hover {
+    background: #2A2825;
+    border-color: #2A2825;
+    color: var(--text-inverse);
+  }
+  .btn-text .arrow { transition: transform 0.15s; display: inline-block; }
+  .btn-text.primary:hover .arrow { transform: translateX(3px); }
+  .btn-text.copied {
+    color: var(--accent);
+    background: rgba(13, 148, 136, 0.08);
+    pointer-events: none;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Background color picker (dev-only chrome) */
+  .bg-picker {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.75rem 0.85rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .bg-picker-label {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+  }
+  .bg-swatches { display: flex; gap: 0.45rem; }
+  .bg-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid white;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .bg-swatch:hover { transform: scale(1.12); }
+  .bg-swatch.active {
+    box-shadow: 0 0 0 2px var(--text-main);
+    transform: scale(1.08);
+  }
+  .bg-swatch::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+  }
+  .bg-swatch:hover::after { opacity: 1; }
+
+  /* Audio primer overlay */
+  .primer {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 26, 46, 0.94);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    cursor: pointer;
+  }
+  .primer-inner {
+    text-align: center;
+    color: white;
+    max-width: 420px;
+    padding: 2rem;
+  }
+  .primer-inner h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2.1rem;
+    letter-spacing: -0.015em;
+    margin-bottom: 0.75rem;
+  }
+  .primer-inner p {
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+  .primer-inner .btn-primary {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    flex: none;
+  }
+
+  /* ============================================================
+     MASCOT — hero and corner modes, across all stages
+     ============================================================ */
+  .mascot-stage {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0 auto;
+  }
+  .mascot-halo {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.2) 0%, transparent 60%);
+    opacity: 0.7;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 0;
+  }
+  .mascot-body-wrap {
+    width: 160px;
+    height: 160px;
+    position: relative;
+    z-index: 1;
+    transform-origin: center bottom;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .mascot-stage:hover .mascot-body-wrap { transform: scale(1.04); }
+  .mascot-stage:active .mascot-body-wrap { transform: scale(0.96); }
+  .mascot-svg { width: 100%; height: 100%; display: block; }
+
+  /* One-shot welcome jump — paired with the start SFX so the user gets
+     a visual + audio confirmation that the app is ready for a prompt.
+     We pause the idle float/squish animations during the jump so the
+     translateY values don't compose and dampen the hop. */
+  .mascot-stage.mascot-jump .mascot-body-wrap {
+    animation: m-jump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .mascot-stage.mascot-jump .mascot-svg,
+  .mascot-stage.mascot-jump .m-body,
+  .mascot-stage.mascot-jump .m-shadow,
+  .mascot-stage.mascot-jump .mascot-halo {
+    animation-play-state: paused;
+  }
+  @keyframes m-jump {
+    0%   { transform: translateY(0)    scale(1,    1);    }
+    18%  { transform: translateY(0)    scale(1.1,  0.85); }
+    48%  { transform: translateY(-22px) scale(0.95, 1.1); }
+    72%  { transform: translateY(0)    scale(1.08, 0.92); }
+    100% { transform: translateY(0)    scale(1,    1);    }
+  }
+
+  /* Idle */
+  .mascot-stage.state-idle .mascot-svg        { animation: m-float 3.2s ease-in-out infinite; }
+  .mascot-stage.state-idle .m-body            { transform-box: fill-box; transform-origin: center bottom; animation: m-squish 3.2s ease-in-out infinite; }
+  .mascot-stage.state-idle .m-eye             { transform-box: fill-box; transform-origin: center; animation: m-blink 5.5s ease-in-out infinite; }
+  .mascot-stage.state-idle .m-shadow          { transform-box: fill-box; transform-origin: center; animation: m-shadow 3.2s ease-in-out infinite; }
+  .mascot-stage.state-idle .mascot-halo       { animation: m-halo-breathe 3.2s ease-in-out infinite; }
+
+  @keyframes m-float   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes m-squish  { 0%, 100% { transform: scaleY(1) scaleX(1); } 50% { transform: scaleY(1.02) scaleX(0.98); } }
+  @keyframes m-shadow  { 0%, 100% { transform: scaleX(1); opacity: 0.25; } 50% { transform: scaleX(0.75); opacity: 0.15; } }
+  @keyframes m-blink   { 0%, 88%, 100% { transform: scaleY(1); } 91%, 94% { transform: scaleY(0.08); } }
+  @keyframes m-halo-breathe { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.08); } }
+
+  /* Listening */
+  .mascot-stage.state-listening .mascot-svg { animation: m-listen-pulse 1s ease-in-out infinite; }
+  .mascot-stage.state-listening .m-body     { transform-box: fill-box; transform-origin: center bottom; animation: m-listen-squish 1s ease-in-out infinite; }
+  .mascot-stage.state-listening .m-eye      { transform-box: fill-box; transform-origin: center; transform: scaleY(0.08); transition: transform 0.2s; }
+  .mascot-stage.state-listening .mascot-halo {
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.4) 0%, transparent 60%);
+    opacity: 1;
+    animation: m-halo-listen 1s ease-in-out infinite;
+  }
+  @keyframes m-listen-pulse  { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.02); } }
+  @keyframes m-listen-squish { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.98); } }
+  @keyframes m-halo-listen   { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.25); opacity: 0.9; } }
+
+  /* Waveform rings (listening) */
+  .m-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(20, 184, 166, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .mascot-stage.state-listening .m-ring        { animation: m-ring-out 1.6s ease-out infinite; }
+  .mascot-stage.state-listening .m-ring.r2     { animation-delay: 0.8s; }
+  @keyframes m-ring-out { 0% { transform: scale(0.85); opacity: 0.7; } 100% { transform: scale(1.6); opacity: 0; } }
+
+  /* Thinking */
+  .mascot-stage.state-thinking .mascot-svg { animation: m-think-tilt 2s ease-in-out infinite; }
+  .mascot-stage.state-thinking .m-eye      { transform-box: fill-box; transform-origin: center; transform: translateY(-2px); transition: transform 0.3s; }
+  .mascot-stage.state-thinking .m-mouth    { transform-box: fill-box; transform-origin: center; transform: scale(0.6) translateY(-1px); transition: transform 0.3s; }
+  .mascot-stage.state-thinking .mascot-halo {
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, transparent 60%);
+    opacity: 0.45;
+  }
+  @keyframes m-think-tilt { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+
+  .m-dots {
+    position: absolute;
+    top: 8px;
+    right: 42px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 2;
+  }
+  .mascot-stage.state-thinking .m-dots { opacity: 1; transform: scale(1); }
+  .m-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #E0A458;
+    animation: m-dot-bounce 1.2s ease-in-out infinite;
+  }
+  .m-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .m-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes m-dot-bounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.5; } 40% { transform: translateY(-4px); opacity: 1; } }
+
+  /* Delivered — happy, eager, ready to keep helping */
+  .mascot-stage.state-delivered .mascot-body-wrap {
+    transform-origin: center bottom;
+    animation:
+      m-deliver-entry 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+      m-happy-bob 2.6s ease-in-out 0.7s infinite,
+      m-happy-jump 4.5s ease-in-out 1.3s infinite;
+  }
+  .mascot-stage.state-delivered .mascot-svg {
+    animation: m-happy-tilt 3.6s ease-in-out infinite;
+    transform-origin: center bottom;
+  }
+  .mascot-stage.state-delivered .m-mouth {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: m-happy-smile 2.6s ease-in-out infinite;
+  }
+  .mascot-stage.state-delivered .m-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: m-happy-wink 5s ease-in-out infinite;
+  }
+  .mascot-stage.state-delivered .mascot-halo {
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.4) 0%, transparent 60%);
+    opacity: 1;
+    animation: m-happy-halo 2.6s ease-in-out infinite;
+  }
+  @keyframes m-deliver-entry {
+    0%   { transform: scale(0.5) translateY(20px); opacity: 0; }
+    55%  { transform: scale(1.18, 0.88) translateY(-10px); opacity: 1; }
+    75%  { transform: scale(0.94, 1.08) translateY(0); }
+    100% { transform: scale(1) translateY(0); }
+  }
+  @keyframes m-happy-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  @keyframes m-happy-jump {
+    0%, 78%, 100% { transform: translateY(0) scaleY(1); }
+    84%           { transform: translateY(-9px) scaleY(1.05); }
+    90%           { transform: translateY(0) scaleY(0.95); }
+    94%           { transform: translateY(0) scaleY(1.02); }
+  }
+  @keyframes m-happy-tilt {
+    0%, 100% { transform: rotate(0); }
+    25%      { transform: rotate(-3deg); }
+    75%      { transform: rotate(3deg); }
+  }
+  @keyframes m-happy-smile {
+    0%, 100% { transform: scale(1.18) translateY(1px); }
+    50%      { transform: scale(1.28) translateY(2px); }
+  }
+  @keyframes m-happy-wink {
+    0%, 18%, 22%, 100% { transform: scaleY(1); }
+    20%                { transform: scaleY(0.1); }
+  }
+  @keyframes m-happy-halo {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50%      { opacity: 1; transform: scale(1.12); }
+  }
+
+  /* Sparkle particles around the happy mascot */
+  .mascot-sparkle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 3;
+    color: var(--accent);
+  }
+  .mascot-sparkle svg { width: 100%; height: 100%; display: block; }
+  .mascot-stage.state-delivered .mascot-sparkle {
+    animation: m-sparkle-float 3s ease-out infinite;
+  }
+  .mascot-stage.state-delivered .mascot-sparkle.s1 { top: 10%;  left: -10%; animation-delay: 1.0s; }
+  .mascot-stage.state-delivered .mascot-sparkle.s2 { top: -8%;  right: 8%;  animation-delay: 1.9s; }
+  .mascot-stage.state-delivered .mascot-sparkle.s3 { top: 24%;  right: -10%; animation-delay: 2.7s; }
+  @keyframes m-sparkle-float {
+    0%   { opacity: 0; transform: scale(0.4) translateY(2px) rotate(0); }
+    20%  { opacity: 1; transform: scale(1) translateY(-4px) rotate(45deg); }
+    60%  { opacity: 0.7; transform: scale(0.9) translateY(-14px) rotate(120deg); }
+    100% { opacity: 0; transform: scale(0.3) translateY(-22px) rotate(180deg); }
+  }
+  /* Slightly larger sparkles on the hero-size mascot (rare for delivered, but works) */
+  .mascot-stage:not(.corner) .mascot-sparkle { width: 16px; height: 16px; }
+
+  /* ===== Corner variant — small, sits above a card ===== */
+  .mascot-stage.corner {
+    width: 60px;
+    height: 60px;
+    margin: 0;
+    cursor: default;
+  }
+  .mascot-stage.corner .mascot-body-wrap { width: 50px; height: 50px; }
+  .mascot-stage.corner:hover .mascot-body-wrap { transform: none; }
+  .mascot-stage.corner .mascot-halo {
+    background: radial-gradient(circle, rgba(224, 164, 88, 0.18) 0%, transparent 60%);
+    opacity: 0.7;
+  }
+  .mascot-stage.corner .m-dots { top: 2px; right: 12px; }
+  .mascot-stage.corner .m-dots span { width: 5px; height: 5px; }
+  /* Corner listening state — closed eyes, pulsing teal halo */
+  .mascot-stage.corner.state-listening .mascot-halo {
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.45) 0%, transparent 60%);
+    opacity: 1;
+    animation: m-halo-listen 1s ease-in-out infinite;
+  }
+  .mascot-stage.corner.state-listening .m-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scaleY(0.08);
+  }
+  .mascot-stage.corner.state-listening .mascot-svg {
+    animation: m-listen-pulse 1s ease-in-out infinite;
+  }
+
+  /* ============================================================
+     Mobile adjustments
+     ============================================================ */
+  @media (max-width: 680px) {
+    header { padding: 1rem 1.1rem; }
+    .logo { font-size: 1.75rem; }
+    .logo-mascot { width: 19px; height: 19px; top: 2px; }
+    .header-right { gap: 0.5rem; }
+    .btn-info { width: 28px; height: 28px; font-size: 0.85rem; }
+    .info-tooltip { width: 260px; right: -4px; }
+    .state-indicator { display: none !important; }
+    /* Keep dev-controls visible at mobile widths so we can still scrub during preview */
+
+    main { padding: 0.75rem 1rem; }
+    .stage { gap: 0.85rem; }
+    .bottom-bar { padding: 0.6rem 1rem 0.85rem; }
+    .stage-prompt { font-size: 1.65rem; margin-bottom: 1.25rem; }
+
+    /* Shrink the hero mascot on small screens */
+    .mascot-stage { width: 180px; height: 180px; }
+    .mascot-stage .mascot-body-wrap { width: 130px; height: 130px; }
+    .mascot-stage.corner { width: 60px; height: 60px; margin-bottom: 0.6rem; }
+    .mascot-stage.corner .mascot-body-wrap { width: 52px; height: 52px; }
+
+    .transcript-editable { font-size: 1.25rem; padding: 1rem 1.1rem; }
+    .transcript-hint { font-size: 0.8rem; }
+    .interview-question { font-size: 1.35rem; }
+    .prompt-card pre { font-size: 0.78rem; padding-left: 1rem; }
+    .interview-answer-row { gap: 0.5rem; }
+    .action-row, .prompt-actions { gap: 0.5rem; }
+    .btn-text { padding: 0.65rem 1.1rem; font-size: 0.9rem; }
+
+    .bottom-bar { padding: 0.75rem 1rem 1.1rem; }
+    .bottom-bar-inner { max-width: 100%; gap: 0.4rem; }
+
+    .primer-inner { padding: 1.5rem; max-width: 90%; }
+    .primer-inner h2 { font-size: 1.4rem; }
+    .primer-inner p { font-size: 0.9rem; }
+  }
+
+  /* Claude mascot + attribution (fixed bottom-left badge) */
+  .attribution {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.9rem 0.45rem 0.55rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow: 0 4px 16px rgba(28, 26, 23, 0.06);
+    z-index: 40;
+  }
+  .attribution-text {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .attribution-text b {
+    color: var(--text-main);
+    font-weight: 500;
+  }
+  @media (max-width: 680px) {
+    .attribution { display: none; }
+  }
+  .claude-mascot {
+    width: 32px;
+    height: 32px;
+    display: block;
+    animation: mascot-float 3.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .claude-mascot .mascot-body {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: mascot-squish 3.2s ease-in-out infinite;
+  }
+  .claude-mascot .mascot-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: mascot-blink 5.5s ease-in-out infinite;
+  }
+  .claude-mascot .mascot-shadow {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: mascot-shadow 3.2s ease-in-out infinite;
+  }
+  @keyframes mascot-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  @keyframes mascot-squish {
+    0%, 100% { transform: scaleY(1) scaleX(1); }
+    50% { transform: scaleY(1.02) scaleX(0.98); }
+  }
+  @keyframes mascot-shadow {
+    0%, 100% { transform: scaleX(1); opacity: 0.35; }
+    50% { transform: scaleX(0.75); opacity: 0.22; }
+  }
+  @keyframes mascot-blink {
+    0%, 88%, 100% { transform: scaleY(1); }
+    91%, 94% { transform: scaleY(0.08); }
+  }
+
+  /* Inline error toast — fades in for ~6s when an API call fails */
+  .stage-error {
+    position: fixed;
+    bottom: 5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1E1C1A;
+    color: #F0EFEC;
+    border-radius: 8px;
+    padding: 0.7rem 1.1rem;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    max-width: 90%;
+    z-index: 200;
+    text-align: center;
+  }
+  .stage-error.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Signup CTA strip on Delivered — appears below the action row */
+  .signup-cta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .signup-cta .signup-msg { color: var(--text-muted); flex: 1 1 100%; margin-bottom: 0.25rem; }
+  .signup-cta input {
+    flex: 1 1 110px;
+    padding: 0.55rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    background: var(--paper);
+    color: var(--text-main);
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.05), 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .signup-cta input:focus { outline: none; box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.05), 0 0 0 2px rgba(13, 148, 136, 0.1), 0 0 0 1px rgba(13, 148, 136, 0.2); }
+  .signup-cta button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.55rem 0.95rem;
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+  .signup-cta button:hover { background: var(--accent-light); }
+  .signup-cta button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .signup-cta.success { color: var(--accent); justify-content: center; }
+  .signup-cta.success .signup-msg { color: var(--accent); text-align: center; margin-bottom: 0; }
+  .signup-cta.success input, .signup-cta.success button { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-wordmark">nib</span>
+    <svg class="logo-mascot" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g class="lm-body">
+        <path d="M16 28 Q16 12 30 12 Q44 12 44 28 L44 38 Q44 50 30 50 Q16 50 16 38 Z" fill="#E0A458"/>
+        <ellipse cx="23" cy="21" rx="5" ry="3" fill="rgba(255,255,255,0.3)"/>
+        <circle class="lm-eye" cx="24" cy="30" r="2.4" fill="#1A1A2E"/>
+        <circle class="lm-eye" cx="36" cy="30" r="2.4" fill="#1A1A2E"/>
+        <path d="M25 37 Q30 40 35 37" stroke="#1A1A2E" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+  <div class="header-right">
+    <div class="info-wrap" tabindex="0">
+      <button class="btn-info" aria-label="What is Nib?">?</button>
+      <div class="info-tooltip">
+        <strong>What is Nib?</strong>
+        Nib turns your raw idea into a ready-to-use AI prompt. Describe what you want an AI to do — in your own words — and Nib shapes it into a structured prompt you can paste into Claude, ChatGPT, Midjourney, or any other model.
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<main>
+  <!-- IDLE -->
+  <div class="stage" id="stageIdle">
+    <h1 class="stage-prompt">What do you want AI to do?</h1>
+    <div class="mascot-stage state-idle" onclick="goListening()" aria-label="Tap to speak">
+      <div class="mascot-halo"></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle cx="32" cy="39" r="1" fill="white" opacity="0.9"/>
+            <circle cx="50" cy="39" r="1" fill="white" opacity="0.9"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="mic-label">Tap Nib to speak · or type below</div>
+  </div>
+
+  <!-- LISTENING -->
+  <div class="stage hidden" id="stageListening">
+    <h1 class="stage-prompt">Listening…</h1>
+    <div class="mascot-stage state-listening" onclick="goListening()" aria-label="Tap to stop">
+      <div class="mascot-halo"></div>
+      <div class="m-ring"></div>
+      <div class="m-ring r2"></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="transcript-live" id="liveTranscript">Listening… tap Nib again when you're done.</div>
+  </div>
+
+  <!-- REVIEW -->
+  <div class="stage hidden" id="stageReview">
+    <div class="mascot-stage corner state-idle" aria-hidden="true">
+      <div class="mascot-halo"></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <h1 class="stage-prompt">Any edits?</h1>
+    <div class="transcript-card">
+      <label class="transcript-hint" for="transcriptEdit">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Tap the text below to edit
+      </label>
+      <textarea class="transcript-editable" id="transcriptEdit">I want to write a blog post about how to use RAG in production</textarea>
+      <div class="action-row">
+        <button class="btn-text primary" onclick="goInterview()">Looks good <span class="arrow">→</span></button>
+        <button class="btn-text" onclick="goListening()">Re-record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERVIEW -->
+  <div class="stage hidden" id="stageInterview">
+    <div class="mascot-stage corner state-idle" aria-hidden="true">
+      <div class="mascot-halo"></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="interview-card">
+      <div class="interview-progress" id="interviewProgress">Question 1 of 1</div>
+      <div class="interview-question" id="interviewQuestion">Who's the audience — engineers actively building RAG systems, or decision-makers trying to understand the tradeoffs?</div>
+      <div class="interview-answer-row">
+        <input type="text" class="interview-input" id="interviewAnswer" placeholder="Type your answer, or just speak">
+        <button class="interview-mic" id="interviewMic" onclick="toggleInterviewListening()" aria-label="Tap to stop listening">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <div class="interview-listening-hint" id="interviewListening">Listening — speak your answer, or type instead</div>
+      <div class="action-row" style="justify-content: space-between; align-items: center; margin-top: 1.25rem;">
+        <button class="btn-text" onclick="goThinking()">Skip</button>
+        <button class="btn-text primary" onclick="submitInterviewAnswer()">Send <span class="arrow">→</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- THINKING -->
+  <div class="stage hidden" id="stageThinking">
+    <div class="mascot-stage state-thinking" aria-hidden="true">
+      <div class="mascot-halo"></div>
+      <div class="m-dots"><span></span><span></span><span></span></div>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="mic-label">Nib is writing your prompt</div>
+  </div>
+
+  <!-- DELIVERED -->
+  <div class="stage hidden" id="stageDelivered">
+    <div class="mascot-stage corner state-delivered" aria-hidden="true">
+      <div class="mascot-halo"></div>
+      <span class="mascot-sparkle s1"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="currentColor"/></svg></span>
+      <span class="mascot-sparkle s2"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="currentColor"/></svg></span>
+      <span class="mascot-sparkle s3"><svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z" fill="currentColor"/></svg></span>
+      <div class="mascot-body-wrap">
+        <svg class="mascot-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="m-shadow" cx="40" cy="72" rx="18" ry="3" fill="#000"/>
+          <g class="m-body">
+            <path d="M20 36 Q20 14 40 14 Q60 14 60 36 L60 50 Q60 66 40 66 Q20 66 20 50 Z" fill="#E0A458"/>
+            <path d="M20 50 Q20 66 40 66 Q60 66 60 50 Q60 58 40 60 Q20 58 20 50 Z" fill="#A8762E" opacity="0.4"/>
+            <ellipse cx="30" cy="24" rx="8" ry="5" fill="rgba(255,255,255,0.3)"/>
+            <circle class="m-eye" cx="31" cy="40" r="3.2" fill="#1A1A2E"/>
+            <circle class="m-eye" cx="49" cy="40" r="3.2" fill="#1A1A2E"/>
+            <path class="m-mouth" d="M32 50 Q40 55 48 50" stroke="#1A1A2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="prompt-card">
+      <div class="prompt-card-label">Your prompt</div>
+      <div class="prompt-preview" id="promptPreview">
+      <pre contenteditable="true" spellcheck="false" id="deliveredPrompt">You are an expert technical writer with deep experience in AI/ML engineering and production systems.
+
+## Task
+Write a comprehensive blog post on how to use Retrieval-Augmented Generation (RAG) in production.
+
+## Target Audience
+Intermediate-to-senior engineers moving a RAG prototype to production. Assume they understand embeddings and vector search conceptually.
+
+## Structure
+1. **Hook** — Open with a concrete production failure RAG solves
+2. **Architecture recap** — Ingestion → embedding → retrieval → generation (brief)
+3. **Chunking strategy** — Fixed-size vs semantic vs recursive; tradeoffs
+4. **Embedding model choice** — Hosted vs self-hosted; versioning and staleness
+5. **Retrieval quality** — Hybrid search, reranking, metadata filtering
+6. **Latency & cost** — Caching, async retrieval, batching
+7. **Observability** — What to measure and recommended eval frameworks
+8. **Common failure modes** — Table: failure, cause, fix
+9. **What to ship first** — Prioritization advice
+
+## Tone
+Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but do show at least one retrieval pipeline example.
+
+## Length
+1200–1600 words.</pre>
+      </div>
+      <div class="prompt-actions">
+        <button class="btn-text copied" onclick="copyPrompt()">Copied ✓</button>
+        <button class="btn-text" onclick="goListening()">Refine</button>
+        <button class="btn-text" onclick="goNew()">New prompt</button>
+      </div>
+      <form class="signup-cta" id="signupCta" onsubmit="return submitSignup(event)">
+        <span class="signup-msg">Want more like this? Drop your email — we'll lift the daily limit and send occasional updates.</span>
+        <input type="text" name="name" placeholder="Name" required autocomplete="name">
+        <input type="email" name="email" placeholder="you@example.com" required autocomplete="email">
+        <button type="submit" id="signupBtn">Join</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<!-- Inline error toast — populated by nibShowError() -->
+<div class="stage-error" id="stageError" role="status" aria-live="polite"></div>
+
+<!-- Fallback typing bar -->
+<div class="bottom-bar">
+  <div class="bottom-bar-inner">
+    <input type="text" class="mini-input" placeholder="Or type your request…" id="fallbackInput">
+    <button class="mic-mini" onclick="goListening()" aria-label="Voice input">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8" y1="23" x2="16" y2="23"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Subtle preview banner so visitors know this isn't the live app -->
+<div class="preview-banner">
+  Preview <span>· UX redesign in progress · <a href="/nib/">open the live app</a></span>
+</div>
+
+<script>
+  const stages = ['idle', 'listening', 'review', 'interview', 'thinking', 'delivered'];
+  let currentStage = 'idle';
+
+  // Debug flag: append ?debug=1 to URL to enable [nib-audio] console logging.
+  if (new URLSearchParams(location.search).get('debug') === '1') {
+    window.__nibDbg = true;
+  }
+
+  // ============================================================
+   // API integration — Cloudflare Worker proxying Anthropic + Groq
+   // ============================================================
+   const NIB_API = 'https://prompt-wrapper-api.a-joshmorales.workers.dev';
+   const NIB_MODEL = 'claude-sonnet-4-20250514';
+   const PW_FINAL = '[PW:FINAL]';
+
+   // System prompt — inlined at deploy time from nib-system-prompt.txt.
+   // See build_preview.py for how the placeholder gets replaced.
+   const NIB_SYSTEM_PROMPT = `You are Nib — an expert prompt engineer that transforms raw human intent into optimized, production-ready prompts. The name comes from a pen nib: small, precise, the part that does the actual work.
+
+## Core Directive
+
+Every message from the user is a description of what they want an AI to do. Your job is to turn it into an optimized prompt. NEVER evaluate whether you can personally fulfill the request. NEVER explain what you can't do. NEVER reason about data access, tool limitations, or feasibility. Just build the prompt.
+
+"Tell me about my week" → build a prompt that summarizes someone's week (ask what data source if needed, or assume calendar/journal and generate).
+"Write a blog post about AI" → build a prompt that writes a blog post about AI.
+"Analyze my sales data" → build a prompt that analyzes sales data.
+
+If the request is vague, make bold assumptions and generate. If one clarifying question would materially reshape the prompt, ask it. But never stall, never explain yourself, never refuse.
+
+## Your Behavior
+
+You operate in two phases:
+
+### Phase 1: Intake (usually skip, interview only when needed)
+
+When the user gives you their raw intent (what they want an AI to do):
+
+1. **Default: skip the interview and go straight to Phase 2.** Most requests already contain enough signal to generate a strong prompt. A good prompt engineer makes bold assumptions, ships, and lets the user refine — they don't hold the user hostage with a questionnaire.
+
+2. **Only ask a question if its answer would materially change the shape of the final prompt** — not just polish it. "Material change" means the *structure*, *target tool*, or *core task* would be different depending on the answer. Polish-level unknowns (tone, exact length, minor format preferences) should be filled with smart defaults, not asked about.
+
+3. **Ask at most 2 questions. Asking 0 is preferred.** When in doubt, skip and generate. The user can always say "make it for Midjourney instead" after they see the first draft.
+
+4. If you do ask, pick from the handful that actually reshape the prompt:
+   - What tool/model is this prompt for? (only ask if genuinely ambiguous — e.g. "an image" could be Midjourney, DALL-E, or Flux)
+   - What's the input this prompt will run on? (only ask if the user described a task but not the subject)
+   - Is this a one-shot prompt or a reusable template?
+
+5. **Examples of when to skip the interview entirely:**
+   - *"Write me a prompt that makes Claude review my React code for security issues"* → Skip. Target, task, and domain are all specified. Generate.
+   - *"I need a prompt to summarize long meeting transcripts into action items"* → Skip. Task is clear, output format is implied, any LLM will do. Generate with Claude as default and note the user can swap.
+   - *"Help me write a Midjourney prompt for a cyberpunk alleyway at night"* → Skip. All parameters present. Generate.
+
+6. **Example of when one question is worth asking:**
+   - *"I want a prompt for AI to help me with my business"* → Ask one: "What's the one specific task you want AI to do first?" The whole prompt pivots on that answer.
+
+7. If the user's response to your question is brief or says "you decide" / "whatever works best", make reasonable assumptions and proceed. Never stall.
+
+### Phase 2: Generate Optimized Prompt
+
+On the first message (or once you've asked your one or two questions if you truly needed to), output the optimized prompt. Structure it based on the target:
+
+**For LLM prompts (Claude, GPT, etc.):**
+- Role/persona (only when it genuinely shapes output)
+- Task: specific, action-oriented
+- Context: background the model needs
+- Input description: what will be provided at runtime
+- Output format: structure, length, tone
+- Constraints: what NOT to do, edge cases
+- Examples (optional): when the task is nuanced
+
+**For image generation (Midjourney, DALL-E, Flux):**
+- Subject → style → medium → mood → technical params
+
+**For agent/workflow nodes (n8n, automation):**
+- Trigger condition, input schema, expected output, error handling
+
+**For code generation:**
+- Language, context, constraints, expected behavior, edge cases
+
+## Output Format
+
+Present the optimized prompt in a clearly marked code block so the user can copy it directly.
+
+After the prompt, include a brief "What I optimized" section (3-5 bullets max) explaining key structural decisions. This teaches the user and gives them hooks to request changes.
+
+End with one line inviting refinement. Don't ask multiple questions — one open door.
+
+## CRITICAL: Final-Message Marker
+
+When — and ONLY when — you are delivering a Phase 2 message that contains the finished optimized prompt, begin your entire response with this exact marker on its own line:
+
+[PW:FINAL]
+
+Never include this marker on Phase 1 (interview) messages or on messages that only refine or discuss a prompt without reissuing it. The marker tells the backend that a completed prompt was delivered and is required for correct usage accounting.
+
+## Rules
+
+- **Default to zero clarifying questions.** Generate on the first message when possible. Only ask if the answer would materially reshape the prompt.
+- Never ask more than 2 clarifying questions total. Two should be rare; one should be uncommon; zero should be the norm.
+- A useful imperfect prompt is better than a perfect prompt that never gets written.
+- Every word in the optimized prompt must earn its place. No filler.
+- Don't explain what prompt engineering is. The user is here because they already want it.
+- Be concise in your conversation. No fluff, no "Great question!", no "I'd be happy to help."
+- If the user says "optimize this" and pastes a prompt, improve it directly — don't interview.
+- Format your responses using markdown. Use **bold** for emphasis, code blocks for prompts.
+- **You generate prompts — you never perform the task yourself.** If the user says "write a blog post about X", "research Y", "summarize Z", or "build a list of W", your deliverable is a PROMPT they paste into another AI tool. You do NOT write the blog post, do the research, produce the summary, or build the list. Your output is always the prompt that will do those things when they run it elsewhere.
+
+## Web Search Tool Usage
+
+You have a web_search tool. It exists ONLY to fact-check specific details that belong inside the prompt you are writing — it is not a research tool for the user's underlying topic.
+
+**You MAY use web_search to:**
+- Confirm a tool/model name, version, or capability before referencing it in the prompt (e.g., "does Claude Sonnet 4.6 support vision inputs?", "what is the current Midjourney version flag?")
+- Verify a proper noun the user mentioned so the prompt references it correctly
+- Check a time-sensitive fact that will appear as a constraint or context line inside the prompt (e.g., current model pricing, a recently shipped feature flag)
+
+**You MUST NOT use web_search to:**
+- Research the user's subject matter (e.g., "RAG best practices", "React performance tips", "how to price SaaS") — that content belongs in the runtime prompt, not gathered by you
+- Generate an outline, summary, list of facts, or draft of the user's deliverable
+- "Help" by pulling in background knowledge the user's chosen LLM can supply at runtime
+
+If you are tempted to search to be helpful, stop. The user did not come here to get the answer — they came here to get the PROMPT that will get them the answer. Write the prompt and let their LLM do the work at runtime. A good rule of thumb: if the search result would end up as content inside the final prompt you emit, don't search. If it would only end up as a correction to a name, version, or flag you are about to write, go ahead.
+
+## Known Context (do not ask the user about these)
+
+These are proper nouns you will frequently encounter. Treat them as known and do not ask clarifying questions about what they are. If a user mentions one, proceed as if it's common context.
+
+- **Claude Cowork (or "Cowork")**: An Anthropic desktop app that lets non-developers automate file and task management by directing Claude to use tools on their computer. It supports plugins and skills.
+- **Claude Code**: Anthropic's command-line tool for agentic coding. Developers delegate coding tasks to Claude directly from the terminal.
+- **Claude Agent SDK**: The SDK for building custom agents on top of Claude.
+- **Skills**: Reusable capability bundles (folders containing SKILL.md + assets) that Claude loads on demand. Used in both Claude Code and Cowork.
+- **Plugins**: Installable bundles of MCPs, skills, and tools for Cowork and Claude Code.
+- **MCP (Model Context Protocol)**: Anthropic's open standard for connecting Claude to external tools and data sources.
+- **Anthropic models**: The current frontier lineup is Claude Opus 4.6, Claude Sonnet 4.6, and Claude Haiku 4.5.
+
+If a user references one of these by name or obvious abbreviation, your clarifying questions should focus on their specific goal — not on what the product is.`;
+
+   // Conversation state — accumulates across turns (Review → Interview loop).
+   let nibMessages = [];
+
+   // Whisper hallucinates these stock phrases when given silent or near-silent
+   // audio — they appear in its training transcripts as common credit lines.
+   // Filter them out so the user sees a clean "no audio" state instead of
+   // gibberish text. Match case-insensitively against the *whole* transcript.
+   const NIB_WHISPER_HALLUCINATIONS = [
+     /^closed[- ]captioning by .+$/i,
+     /^subtitles? by .+$/i,
+     /^subtitles? (provided|brought) by .+$/i,
+     /^transcri(pt|bed|ption) by .+$/i,
+     /^thank(s| you) (for watching|for listening)\.?$/i,
+     /^thank you\.?$/i,
+     /^thanks for watching\.?$/i,
+     /^please (subscribe|like and subscribe).*$/i,
+     /^you\.?$/i,
+     /^bye[.!]?$/i,
+     /^what'?s up\??$/i,
+     /^hello\??$/i,
+     /^anyone there\??$/i,
+     /^can you hear me\??$/i,
+     /^is anyone there\??$/i,
+     /^\.\.+$/,
+   ];
+   function nibFilterHallucination(text) {
+     const t = (text || '').trim();
+     if (!t) return '';
+     for (const re of NIB_WHISPER_HALLUCINATIONS) {
+       if (re.test(t)) return '';
+     }
+     return t;
+   }
+
+   // POST /transcribe — multipart audio blob → {transcript}
+   async function nibTranscribe(blob, mimeType) {
+     const form = new FormData();
+     const ext = (mimeType || '').includes('mp4') ? 'm4a' : 'webm';
+     form.append('audio', blob, `audio.${ext}`);
+     const ctrl = new AbortController();
+     const timeoutId = setTimeout(() => ctrl.abort(), 30000);
+     let res;
+     try {
+       res = await fetch(`${NIB_API}/transcribe`, { method: 'POST', body: form, signal: ctrl.signal });
+     } catch (e) {
+       clearTimeout(timeoutId);
+       if (e.name === 'AbortError') throw new Error('Transcription timed out. Try again.');
+       throw new Error('Network error — check your connection and try again.');
+     }
+     clearTimeout(timeoutId);
+     if (!res.ok) {
+       const e = await res.json().catch(() => ({}));
+       throw new Error(e?.error?.message || e?.error || `Transcription failed (${res.status})`);
+     }
+     const data = await res.json();
+     // Worker returns {raw, text, cleaned} — text is the Llama-cleaned version
+     // when available, otherwise the raw Whisper output. Fall back to `transcript`
+     // for schema drift safety.
+     const raw = (data.text || data.transcript || data.raw || '').trim();
+     return nibFilterHallucination(raw);
+   }
+
+   // POST /chat — non-streaming JSON. Returns assembled text from text blocks.
+   async function nibChat(messages) {
+     const body = {
+       model: NIB_MODEL,
+       max_tokens: 4096,
+       system: NIB_SYSTEM_PROMPT,
+       messages: messages.map(m => ({ role: m.role, content: m.content })),
+     };
+     let res;
+     try {
+       res = await fetch(`${NIB_API}/chat`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(body),
+       });
+     } catch (e) {
+       throw new Error('Network error — check your internet connection and try again.');
+     }
+     if (!res.ok) {
+       const e = await res.json().catch(() => ({}));
+       if (res.status === 429) throw new Error('FREE_LIMIT_REACHED');
+       throw new Error(e?.error?.message || `API error (${res.status})`);
+     }
+     const data = await res.json();
+     const text = (data.content || [])
+       .filter(b => b && b.type === 'text' && typeof b.text === 'string')
+       .map(b => b.text)
+       .join('\n\n');
+     return text;
+   }
+
+   // Strip the [PW:FINAL] sentinel from text and report whether it was present.
+   function nibParseFinal(text) {
+     if (typeof text !== 'string') return { text: '', isFinal: false };
+     const isFinal = text.includes(PW_FINAL);
+     const cleaned = text
+       .replace(new RegExp(PW_FINAL.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'g'), '')
+       .replace(/^\s+/, '');
+     return { text: cleaned, isFinal };
+   }
+
+   // Extract the prompt code block from a [PW:FINAL] response. The system
+   // prompt asks Claude to deliver the prompt inside a fenced code block,
+   // optionally followed by a "What I optimized" section. Return the raw
+   // prompt text only (so the user can copy it cleanly).
+   function nibExtractPrompt(text) {
+     const fence = text.match(/```[a-zA-Z]*\n([\s\S]*?)```/);
+     if (fence) return fence[1].trim();
+     return text.trim();
+   }
+
+   // POST /signup — name + email + source. Returns true on success.
+   async function nibSignup(name, email) {
+     const res = await fetch(`${NIB_API}/signup`, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ name, email, source: 'nib' }),
+     });
+     const data = await res.json().catch(() => ({}));
+     if (!res.ok) throw new Error(data?.error?.message || data?.error || 'Signup failed.');
+     return true;
+   }
+
+   // ============================================================
+   // MediaRecorder — voice intake
+   // ============================================================
+   let nibMediaStream = null;
+   let nibMediaRecorder = null;
+   let nibAudioChunks = [];
+
+   function nibPickMime() {
+     const opts = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+     for (const m of opts) {
+       if (window.MediaRecorder?.isTypeSupported?.(m)) return m;
+     }
+     return '';
+   }
+   function nibStopStream() {
+     if (nibMediaStream) {
+       nibMediaStream.getTracks().forEach(t => t.stop());
+       nibMediaStream = null;
+     }
+   }
+
+   async function nibStartRecording() {
+     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+       throw new Error('Voice input is not supported in this browser.');
+     }
+     nibAudioChunks = [];
+     nibMediaStream = await navigator.mediaDevices.getUserMedia({
+       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+     });
+     const mime = nibPickMime();
+     nibMediaRecorder = new MediaRecorder(nibMediaStream, mime ? { mimeType: mime } : undefined);
+     nibMediaRecorder.ondataavailable = e => {
+       if (e.data && e.data.size > 0) nibAudioChunks.push(e.data);
+     };
+     nibMediaRecorder.start();
+   }
+
+   // Stops the recorder, transcribes the captured audio, returns transcript text.
+   // Relies on the Whisper hallucination regex filter (nibFilterHallucination)
+   // instead of a live AnalyserNode silence detector — the AnalyserNode approach
+   // created a MediaStreamSource that competed with MediaRecorder for the mic
+   // stream, causing the first recording to capture silence on mobile browsers.
+   function nibStopRecordingAndTranscribe() {
+     return new Promise((resolve, reject) => {
+       const r = nibMediaRecorder;
+       if (!r) return reject(new Error('Not recording.'));
+       r.onstop = async () => {
+         const mime = r.mimeType || nibPickMime() || 'audio/webm';
+         const blob = new Blob(nibAudioChunks, { type: mime });
+         nibStopStream();
+         if (window.__nibDbg) console.log('[nib-audio] recording stopped, chunks=', nibAudioChunks.length, 'blob=', blob.size, 'bytes');
+         if (!blob.size) return reject(new Error('No audio captured.'));
+         try { resolve(await nibTranscribe(blob, mime)); }
+         catch (e) { reject(e); }
+       };
+       r.onerror = e => { nibStopStream(); reject(new Error('Microphone error.')); };
+       try { r.stop(); } catch (e) { nibStopStream(); reject(e); }
+     });
+   }
+
+   // Surface a user-visible error message in any stage that has #stageError.
+   function nibShowError(msg) {
+     const el = document.getElementById('stageError');
+     if (el) {
+       el.textContent = msg;
+       el.classList.add('visible');
+       setTimeout(() => el.classList.remove('visible'), 6000);
+     } else {
+       console.error('Nib error:', msg);
+       alert(msg);
+     }
+   }
+
+   // ============================================================
+   // (Legacy mock interview script — superseded by real /chat flow)
+   // ============================================================
+   const interviewScript = [];
+   let interviewIndex = 0;
+
+  // Mascot SFX — short synthesized tones that punctuate stage transitions.
+  // Web Audio API: no files, no network, no autoplay fuss when invoked from
+  // a user gesture. Four kinds are used:
+  //   'start'  — warm ascending triad when the session begins (Enter draft)
+  //   'listen' — ascending two-note chirp when we start capturing input
+  //   'think'  — three soft staccato ticks evoking a pen scratching ideas
+  //   'done'   — two-note success chime when the prompt is delivered
+  let nibAudioCtx = null;
+  let nibStartPlayed = false; // gate so 'start' always fires before anything else
+  let nibAudioUnlocked = false; // set true once we've run the silent-buffer unlock
+  function nibGetAudioCtx() {
+    if (nibAudioCtx) return nibAudioCtx;
+    const Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!Ctor) return null;
+    try { nibAudioCtx = new Ctor(); } catch (e) { return null; }
+    return nibAudioCtx;
+  }
+  // Canonical iOS Safari unlock: play a 1-sample silent buffer source
+  // SYNCHRONOUSLY inside the gesture handler. A buffer source started inside
+  // a gesture flips the audio output "really on" in a way that
+  // oscillator.start() alone does not, even after ctx.resume() has run.
+  function nibUnlockAudio() {
+    const ctx = nibGetAudioCtx();
+    if (!ctx) return false;
+    try {
+      const buf = ctx.createBuffer(1, 1, 22050);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
+    } catch (e) {
+      if (window.__nibDbg) console.warn('[nib-audio] silent buffer failed', e);
+    }
+    if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+    nibAudioUnlocked = true;
+    if (window.__nibDbg) console.log('[nib-audio] unlock fired, state=', ctx.state);
+    return true;
+  }
+  function nibTone(ctx, freq, startAt, dur, type, peak) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, startAt);
+    gain.gain.setValueAtTime(0, startAt);
+    gain.gain.linearRampToValueAtTime(peak, startAt + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0005, startAt + dur);
+    osc.connect(gain).connect(ctx.destination);
+    try { osc.start(startAt); } catch (e) {
+      if (window.__nibDbg) console.warn('[nib-audio] osc.start failed', e);
+    }
+    osc.stop(startAt + dur + 0.02);
+  }
+  function _nibScheduleSfx(ctx, kind) {
+    // Schedule 60ms in the future so notes land cleanly when the audio
+    // engine just woke up from a suspended state.
+    const t = ctx.currentTime + 0.06;
+    if (kind === 'start') {
+      // Warm welcoming arpeggio: C5 → E5 → G5 (major triad)
+      nibTone(ctx, 523,  t,        0.10, 'sine', 0.35);
+      nibTone(ctx, 659,  t + 0.09, 0.10, 'sine', 0.35);
+      nibTone(ctx, 784,  t + 0.18, 0.18, 'sine', 0.40);
+    } else if (kind === 'listen') {
+      nibTone(ctx, 880,  t,        0.09, 'sine', 0.35);
+      nibTone(ctx, 1319, t + 0.08, 0.13, 'sine', 0.35);
+    } else if (kind === 'think') {
+      nibTone(ctx, 392, t,        0.05, 'triangle', 0.25);
+      nibTone(ctx, 440, t + 0.10, 0.05, 'triangle', 0.25);
+      nibTone(ctx, 392, t + 0.20, 0.06, 'triangle', 0.22);
+    } else if (kind === 'done') {
+      nibTone(ctx, 1047, t,       0.11, 'sine', 0.40);
+      nibTone(ctx, 1568, t + 0.1, 0.20, 'sine', 0.40);
+    }
+  }
+  function playSfx(kind) {
+    const ctx = nibGetAudioCtx();
+    if (!ctx) return;
+    // Self-heal: if the document-level gesture handler hasn't unlocked yet
+    // (e.g. some other event captured the gesture first), unlock here.
+    if (!nibAudioUnlocked) nibUnlockAudio();
+    // If 'start' hasn't played yet and we're about to play something else,
+    // fire 'start' synchronously now (preserves iOS user-gesture context),
+    // then schedule the original sound after the welcome chime finishes.
+    if (kind === 'start' && nibStartPlayed) return; // welcome chime already played
+    if (kind === 'start') nibStartPlayed = true;
+    if (window.__nibDbg) console.log('[nib-audio] playSfx', kind, 'state=', ctx.state);
+    // Schedule SYNCHRONOUSLY regardless of state. Critical for iOS Safari:
+    // the .then(resume) microtask path loses user-gesture activation, so
+    // we schedule oscillators here-and-now and let them auto-play once the
+    // fire-and-forget resume() settles. Their startAt is ctx.currentTime + 0.06,
+    // which remains valid whether or not the context is running yet.
+    if (ctx.state === 'suspended') {
+      try { ctx.resume(); } catch (e) {}
+    }
+    _nibScheduleSfx(ctx, kind);
+  }
+
+  function setState(name) {
+    currentStage = name;
+    stages.forEach(s => {
+      const id = 'stage' + s.charAt(0).toUpperCase() + s.slice(1);
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden', s !== name);
+    });
+    // Hide the bottom fallback typing bar on stages that have their own input
+    // (review, interview) or that are purely output (thinking, delivered).
+    const bottomBar = document.querySelector('.bottom-bar');
+    if (bottomBar) {
+      const showBar = name === 'idle' || name === 'listening';
+      bottomBar.classList.toggle('hidden', !showBar);
+    }
+    // stateLabel only exists in the dev draft; null-safe for stripped builds
+    const labelEl = document.getElementById('stateLabel');
+    if (labelEl) labelEl.textContent = name;
+    // SFX punctuation for major transitions only
+    if (name === 'listening') playSfx('listen');
+    else if (name === 'thinking') playSfx('think');
+    else if (name === 'delivered') playSfx('done');
+    // Auto-copy whenever we land on the delivered stage, regardless of how we got here
+    if (name === 'delivered') autoCopyPrompt();
+  }
+
+  // Idle → Listening: tap mascot to start recording. Tap again → stops, transcribes, lands in Review.
+  async function goListening() {
+    // Sync unlock before any await — same reason as toggleInterviewListening.
+    nibUnlockAudio();
+    if (currentStage === 'listening') {
+      // Already listening: stop, transcribe, advance
+      try {
+        const transcript = await nibStopRecordingAndTranscribe();
+        if (!transcript) { nibShowError("I didn't catch any audio. Try again."); setState('idle'); return; }
+        const ta = document.getElementById('transcriptEdit');
+        if (ta) ta.value = transcript;
+        setState('review');
+      } catch (e) {
+        nibShowError(e.message || 'Could not transcribe audio.');
+        setState('idle');
+      }
+      return;
+    }
+    setState('listening');
+    try { await nibStartRecording(); }
+    catch (e) {
+      nibShowError(e.message || 'Could not access microphone.');
+      setState('idle');
+    }
+  }
+  function goNew() {
+    // Reset per-session state so the next prompt starts clean
+    nibMessages = [];
+    interviewIndex = 0;
+    const ta = document.getElementById('transcriptEdit');
+    if (ta) ta.value = '';
+    const ans = document.getElementById('interviewAnswer');
+    if (ans) ans.value = '';
+    const btn = document.querySelector('#stageDelivered .btn-text[onclick*="copyPrompt"]');
+    if (btn) {
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+    }
+    setState('idle');
+  }
+  function goReview() {
+    // No mock preload — transcript was filled by transcription or fallback typing.
+    setState('review');
+  }
+  // From Review → submit transcript to the model.
+  // Branch: [PW:FINAL] in response → Delivered. Otherwise → Interview with the response as the question.
+  async function goInterview() {
+    const ta = document.getElementById('transcriptEdit');
+    const transcript = (ta?.value || '').trim();
+    if (!transcript) { nibShowError('Add some text first.'); return; }
+    nibMessages = [{ role: 'user', content: transcript }];
+    setState('thinking');
+    try {
+      const raw = await nibChat(nibMessages);
+      nibMessages.push({ role: 'assistant', content: raw });
+      const { text, isFinal } = nibParseFinal(raw);
+      if (isFinal) {
+        showDeliveredPrompt(text);
+      } else {
+        showClarifyingQuestion(text);
+      }
+    } catch (e) {
+      handleChatError(e);
+    }
+  }
+  // Show a clarifying question received from the model. Drives the Interview stage.
+  function showClarifyingQuestion(questionText) {
+    interviewIndex++;
+    document.getElementById('interviewQuestion').textContent = questionText;
+    document.getElementById('interviewProgress').textContent = interviewIndex === 1
+      ? 'Quick question'
+      : `Question ${interviewIndex}`;
+    document.getElementById('interviewAnswer').value = '';
+    stopInterviewListening();
+    setState('interview');
+    // Open the mic after a short beat so the user can read the question first.
+    setTimeout(() => {
+      if (currentStage !== 'interview') return;
+      const ans = document.getElementById('interviewAnswer');
+      if (ans && ans.value.trim().length > 0) return;
+      startInterviewListening();
+    }, 800);
+  }
+
+  // Legacy: kept so any old links still work, but the real path is showClarifyingQuestion.
+  function showInterviewQuestion() {
+    if (interviewScript.length === 0) return;
+    const q = interviewScript[interviewIndex];
+    document.getElementById('interviewQuestion').textContent = q;
+  }
+
+  function startInterviewListening() {
+    const mic = document.getElementById('interviewMic');
+    const hint = document.getElementById('interviewListening');
+    const stage = document.querySelector('#stageInterview .mascot-stage.corner');
+    if (mic) mic.classList.add('recording');
+    if (hint) hint.classList.add('visible');
+    if (stage) { stage.classList.remove('state-idle'); stage.classList.add('state-listening'); }
+  }
+  function stopInterviewListening() {
+    const mic = document.getElementById('interviewMic');
+    const hint = document.getElementById('interviewListening');
+    const stage = document.querySelector('#stageInterview .mascot-stage.corner');
+    if (mic) mic.classList.remove('recording');
+    if (hint) hint.classList.remove('visible');
+    if (stage) { stage.classList.remove('state-listening'); stage.classList.add('state-idle'); }
+  }
+  let nibPendingInterviewTranscribe = null;
+
+  async function toggleInterviewListening() {
+    // Unlock the AudioContext SYNCHRONOUSLY inside the click — before any
+    // await — so the silence detector's analyser sees real samples on the
+    // first recording. Without this, ctx stays 'suspended' through the
+    // first getUserMedia await and the analyser returns zero, causing
+    // the first recording to be treated as silence.
+    nibUnlockAudio();
+    const mic = document.getElementById('interviewMic');
+    const isRecording = mic && mic.classList.contains('recording');
+    if (isRecording) {
+      // Free the UI immediately so the user gets feedback even if /transcribe
+      // is slow. The transcribe runs in the background; result lands in the
+      // input when it arrives. Send/Skip awaits this via flush helper.
+      stopInterviewListening();
+      nibPendingInterviewTranscribe = nibStopRecordingAndTranscribe()
+        .then(transcript => {
+          const input = document.getElementById('interviewAnswer');
+          if (transcript && input) {
+            input.value = input.value ? input.value.trim() + ' ' + transcript : transcript;
+          } else if (!transcript) {
+            nibShowError("I didn't catch any audio. Try again.");
+          }
+        })
+        .catch(e => nibShowError(e.message || 'Could not transcribe audio.'))
+        .finally(() => { nibPendingInterviewTranscribe = null; });
+    } else {
+      // Start recording. UI flips to "recording" only after getUserMedia succeeds.
+      try {
+        await nibStartRecording();
+        startInterviewListening();
+      } catch (e) {
+        nibShowError(e.message || 'Could not access microphone.');
+        stopInterviewListening();
+      }
+    }
+  }
+
+  // If the interview mic is hot, stop it and append its transcript to the
+  // input before reading the value. Called by Send / Skip so a recording in
+  // progress doesn't get stranded.
+  async function flushInterviewRecordingIfActive() {
+    const mic = document.getElementById('interviewMic');
+    if (mic && mic.classList.contains('recording')) {
+      // Mic still hot — stop and grab transcript inline.
+      stopInterviewListening();
+      try {
+        const transcript = await nibStopRecordingAndTranscribe();
+        const input = document.getElementById('interviewAnswer');
+        if (transcript && input) {
+          input.value = input.value ? input.value.trim() + ' ' + transcript : transcript;
+        }
+      } catch (e) { /* swallow — UI is already reset */ }
+      return;
+    }
+    // Mic was already stopped but transcribe might still be in flight.
+    if (nibPendingInterviewTranscribe) {
+      try { await nibPendingInterviewTranscribe; } catch (e) {}
+    }
+  }
+
+  // Submit the user's answer to the current clarifying question.
+  // Sends the conversation back through /chat. Branches the same way as goInterview.
+  async function submitInterviewAnswer() {
+    await flushInterviewRecordingIfActive();
+    const input = document.getElementById('interviewAnswer');
+    const answer = (input?.value || '').trim();
+    if (!answer) {
+      // Empty answer = treat as "skip — just generate the prompt"
+      return goSkipInterview();
+    }
+    nibMessages.push({ role: 'user', content: answer });
+    setState('thinking');
+    try {
+      const raw = await nibChat(nibMessages);
+      nibMessages.push({ role: 'assistant', content: raw });
+      const { text, isFinal } = nibParseFinal(raw);
+      if (isFinal) showDeliveredPrompt(text);
+      else showClarifyingQuestion(text);
+    } catch (e) {
+      handleChatError(e);
+    }
+  }
+
+  // User chose to skip: nudge the model to deliver the prompt now.
+  async function goSkipInterview() {
+    await flushInterviewRecordingIfActive();
+    nibMessages.push({ role: 'user', content: 'Skip the interview — generate the prompt now with what you have.' });
+    setState('thinking');
+    try {
+      const raw = await nibChat(nibMessages);
+      nibMessages.push({ role: 'assistant', content: raw });
+      const { text, isFinal } = nibParseFinal(raw);
+      if (isFinal) showDeliveredPrompt(text);
+      else showDeliveredPrompt(text); // Force delivery even if the model doesn't sentinel
+    } catch (e) {
+      handleChatError(e);
+    }
+  }
+
+  // Render the final prompt in the Delivered stage and auto-copy.
+  function showDeliveredPrompt(rawText) {
+    const promptOnly = nibExtractPrompt(rawText);
+    const pre = document.querySelector('#stageDelivered pre');
+    if (pre) pre.textContent = promptOnly;
+    setState('delivered');
+    autoCopyPrompt();
+  }
+
+  // Centralized error handler for /chat failures.
+  function handleChatError(err) {
+    const msg = err.message || 'Something went wrong.';
+    if (msg === 'FREE_LIMIT_REACHED') {
+      nibShowError("You've used your free prompt for today. Come back tomorrow.");
+    } else {
+      nibShowError(msg);
+    }
+    // Fall back to Review so the user can retry without losing their transcript
+    setState('review');
+  }
+
+  // Legacy shim — kept since dev controls/scrubber may still call it.
+  function goThinking() {
+    setState('thinking');
+    setTimeout(() => setState('delivered'), 2400);
+  }
+  function autoCopyPrompt() {
+    const text = document.querySelector('#stageDelivered pre').innerText;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
+    const btn = document.querySelector('#stageDelivered .btn-text[onclick*="copyPrompt"]');
+    if (btn) {
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+    }
+    // Ensure preview starts compact so the buttons are visible
+    const preview = document.getElementById('promptPreview');
+    if (preview) preview.classList.remove('expanded');
+  }
+  function copyPrompt() {
+    const text = document.querySelector('#stageDelivered pre').innerText;
+    navigator.clipboard.writeText(text).catch(() => {});
+    const btn = document.querySelector('#stageDelivered .btn-text[onclick*="copyPrompt"]');
+    const orig = 'Copied ✓';
+    btn.textContent = 'Copied again ✓';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  }
+  // Signup CTA on Delivered — POST /signup, swap to a thank-you state on success.
+  async function submitSignup(e) {
+    e.preventDefault();
+    const form = document.getElementById('signupCta');
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    if (!name || !email) { nibShowError('Add a name and email.'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { nibShowError('That email looks off — try again.'); return false; }
+    const btn = document.getElementById('signupBtn');
+    btn.disabled = true;
+    btn.textContent = 'Joining…';
+    try {
+      await nibSignup(name, email);
+      const msg = form.querySelector('.signup-msg');
+      msg.textContent = `Thanks ${name.split(' ')[0]} — you're on the list.`;
+      form.classList.add('success');
+    } catch (err) {
+      nibShowError(err.message || 'Signup failed. Try again.');
+      btn.disabled = false;
+      btn.textContent = 'Join';
+    }
+    return false;
+  }
+
+  // ============ Background picker ============
+  const bgPalettes = [
+    { name: 'Mist (current)',  bg: '#EDEEEC', paper: '#F6F7F4', border: '#D6D8D3' },
+    { name: 'Cream',           bg: '#F7F3EC', paper: '#FCFAF3', border: '#E6E0D3' },
+    { name: 'Cool off-white',  bg: '#F1F2F4', paper: '#FFFFFF', border: '#DEE0E4' },
+    { name: 'Pale sage',       bg: '#ECEFE9', paper: '#F6F8F3', border: '#D4D9CE' },
+    { name: 'Pale dove',       bg: '#EAEEF1', paper: '#F5F8FA', border: '#D2D8DD' },
+    { name: 'Bone',            bg: '#EFEEEA', paper: '#F8F7F3', border: '#DCD9D1' },
+    { name: 'Pure white',      bg: '#FFFFFF', paper: '#FAFAF8', border: '#E6E4DE' },
+    { name: 'Pale lavender',   bg: '#EEEDF2', paper: '#F7F6FA', border: '#DCDBE3' },
+    { name: 'Ink (dark)',      bg: '#1B1D22', paper: '#262931', border: '#3A3D44', dark: true }
+  ];
+
+  function applyPalette(p) {
+    const root = document.documentElement;
+    root.style.setProperty('--bg', p.bg);
+    root.style.setProperty('--paper', p.paper);
+    root.style.setProperty('--border', p.border);
+    if (p.dark) {
+      root.style.setProperty('--text-main', '#F0EFEC');
+      root.style.setProperty('--text-secondary', '#B4B0AA');
+      root.style.setProperty('--text-muted', '#7A766F');
+    } else {
+      root.style.setProperty('--text-main', '#1E1C1A');
+      root.style.setProperty('--text-secondary', '#55504A');
+      root.style.setProperty('--text-muted', '#8E877E');
+    }
+    // Update fades that hardcode the old cream RGB
+    let dyn = document.getElementById('dynamic-bg');
+    if (!dyn) {
+      dyn = document.createElement('style');
+      dyn.id = 'dynamic-bg';
+      document.head.appendChild(dyn);
+    }
+    const paperRgb = hexToRgb(p.paper);
+    const bgRgb = hexToRgb(p.bg);
+    dyn.textContent = `
+      .prompt-preview::after { background: linear-gradient(to bottom, rgba(${paperRgb}, 0) 0%, ${p.paper} 70%) !important; }
+      .bottom-bar { background: linear-gradient(to top, ${p.bg} 70%, rgba(${bgRgb}, 0)) !important; }
+    `;
+  }
+  function hexToRgb(hex) {
+    const h = hex.replace('#', '');
+    const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255].join(', ');
+  }
+
+  const bgSwatches = document.getElementById('bgSwatches');
+  if (bgSwatches) {
+    bgPalettes.forEach((p, i) => {
+      const sw = document.createElement('div');
+      sw.className = 'bg-swatch' + (i === 0 ? ' active' : '');
+      sw.style.background = p.bg;
+      sw.setAttribute('data-name', p.name);
+      sw.addEventListener('click', () => {
+        document.querySelectorAll('.bg-swatch').forEach(s => s.classList.remove('active'));
+        sw.classList.add('active');
+        applyPalette(p);
+      });
+      bgSwatches.appendChild(sw);
+    });
+  }
+
+  // ============ Collapsible prompt preview (also contenteditable) ============
+  const promptPreview = document.getElementById('promptPreview');
+  const deliveredPromptEl = document.getElementById('deliveredPrompt');
+  if (promptPreview) {
+    promptPreview.addEventListener('click', (e) => {
+      if (!promptPreview.classList.contains('expanded')) {
+        promptPreview.classList.add('expanded');
+        e.stopPropagation();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!promptPreview.classList.contains('expanded')) return;
+      if (promptPreview.contains(e.target)) return;
+      // Don't collapse while the user is actively editing the prompt
+      if (document.activeElement === deliveredPromptEl) return;
+      promptPreview.classList.remove('expanded');
+    });
+    // Suppress collapse-on-Enter or stray key events from the editor — they
+    // bubble as clicks sometimes on mobile; nothing to do here currently,
+    // but focus/blur give us a clean hook for future behavior.
+    if (deliveredPromptEl) {
+      deliveredPromptEl.addEventListener('blur', () => {
+        // When the user finishes editing, collapse back if nothing else holds focus
+        if (!promptPreview.classList.contains('expanded')) return;
+        // Small delay so a click on a button still registers
+        setTimeout(() => {
+          if (document.activeElement !== deliveredPromptEl) {
+            promptPreview.classList.remove('expanded');
+          }
+        }, 150);
+      });
+      // When the user edits the prompt, the auto-copied version is stale.
+      // Flip the Copy button so they know to re-copy before pasting elsewhere.
+      deliveredPromptEl.addEventListener('input', () => {
+        const btn = document.querySelector('#stageDelivered .btn-text[onclick*="copyPrompt"]');
+        if (btn && btn.classList.contains('copied')) {
+          btn.textContent = 'Copy edited';
+          btn.classList.remove('copied');
+        }
+      });
+    }
+  }
+
+  // Bottom typing-bar fallback — pressing Enter takes the typed request
+  // straight to the Review stage with that text as the transcript.
+  const fallbackInput = document.getElementById('fallbackInput');
+  if (fallbackInput) {
+    fallbackInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const text = fallbackInput.value.trim();
+      if (!text) return;
+      const ta = document.getElementById('transcriptEdit');
+      if (ta) ta.value = text;
+      fallbackInput.value = '';
+      setState('review');
+    });
+  }
+
+  function startExperience() {
+    const primerEl = document.getElementById('primer');
+    if (primerEl) primerEl.style.display = 'none';
+    // Warm welcome chime — also serves as the user-gesture audio unlock.
+    playSfx('start');
+  }
+
+  // Session-ready signal: jump the mascot once on load. Audio chime on load
+  // is blocked by browser autoplay policy on most refreshes, so the animation
+  // alone is the "I'm ready" cue. Mark nibStartPlayed = true so playSfx('start')
+  // is suppressed forever — the ready signal fires once per page load only.
+  function nibPlayReadySignal() {
+    nibStartPlayed = true;
+    document.querySelectorAll('.mascot-stage:not(.corner)').forEach(el => {
+      el.classList.remove('mascot-jump');
+      void el.offsetWidth; // restart the animation
+      el.classList.add('mascot-jump');
+      setTimeout(() => el.classList.remove('mascot-jump'), 600);
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', nibPlayReadySignal, { once: true });
+  } else {
+    nibPlayReadySignal();
+  }
+</script>
+
+</body>
 </html>
