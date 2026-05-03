@@ -1311,7 +1311,6 @@
 <main>
   <!-- IDLE -->
   <div class="stage" id="stageIdle">
-    <h1 class="stage-prompt">What do you want AI to do?</h1>
     <div class="mascot-stage state-idle" onclick="goListening()" aria-label="Tap to speak">
       <div class="mascot-halo"></div>
       <div class="mascot-body-wrap">
@@ -1330,12 +1329,12 @@
         </svg>
       </div>
     </div>
-    <div class="mic-label">Tap Nib to speak · or type below</div>
+    <h1 class="stage-prompt">What do you want AI to do?</h1>
+    <div class="mic-label">Tap Nib to speak, or type below</div>
   </div>
 
   <!-- LISTENING -->
   <div class="stage hidden" id="stageListening">
-    <h1 class="stage-prompt">Listening…</h1>
     <div class="mascot-stage state-listening" onclick="goListening()" aria-label="Tap to stop">
       <div class="mascot-halo"></div>
       <div class="m-ring"></div>
@@ -1354,6 +1353,7 @@
         </svg>
       </div>
     </div>
+    <h1 class="stage-prompt">Listening…</h1>
     <div class="transcript-live" id="liveTranscript">Listening… tap Nib again when you're done.</div>
   </div>
 
