@@ -8,20 +8,22 @@
 <meta name="description" content="Preview of the upcoming Nib UX redesign.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #EDEEEC;
-    --paper: #F6F7F4;
-    --text-main: #1E1C1A;
-    --text-secondary: #55504A;
-    --text-muted: #8E877E;
+    --bg: #F2EFE8;
+    --bg-dark: #1E1C1A;
+    --paper: #FDFCF8;
+    --text-main: #1C1A17;
+    --text-secondary: #5C564D;
+    --text-muted: #9A9388;
+    --text-inverse: #E8E5DE;
     --accent: #0D9488;
     --accent-light: #14B8A6;
-    --border: #D6D8D3;
+    --border: rgba(28, 26, 23, 0.08);
 
-    --font-display: 'Iowan Old Style', 'Hoefler Text', 'Apple Garamond', Georgia, 'Times New Roman', serif;
-    --font-ui: 'Iowan Old Style', 'Hoefler Text', 'Apple Garamond', Georgia, 'Times New Roman', serif;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-ui: 'Inter', -apple-system, sans-serif;
     --font-mono: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,20 +41,21 @@
   }
   header {
     flex: 0 0 auto;
-    padding: 0.95rem 2rem;
+    padding: 0.9rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: var(--bg-dark);
   }
   .logo {
     font-family: var(--font-display);
-    font-size: 2.3rem;
-    font-weight: 500;
+    font-size: 2rem;
+    font-weight: 400;
     display: flex;
     align-items: baseline;
     gap: 0;
-    letter-spacing: -0.03em;
-    color: var(--text-main);
+    letter-spacing: -0.02em;
+    color: var(--text-inverse);
   }
   .logo-wordmark { display: inline-block; }
   .logo-mascot {
@@ -86,14 +89,14 @@
   /* Info button + tooltip */
   .info-wrap { position: relative; }
   .btn-info {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    border: 1px solid var(--border);
-    background: white;
-    color: var(--text-secondary);
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
     font-family: var(--font-ui);
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -101,14 +104,14 @@
     justify-content: center;
     transition: all 0.2s;
   }
-  .btn-info:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-info:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.8); }
   .info-tooltip {
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
     width: 300px;
-    background: white;
-    border: 1px solid var(--border);
+    background: var(--paper);
+    border: 1px solid rgba(28, 26, 23, 0.08);
     border-radius: 12px;
     padding: 1rem 1.1rem;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
@@ -128,9 +131,9 @@
     right: 12px;
     width: 12px;
     height: 12px;
-    background: white;
-    border-left: 1px solid var(--border);
-    border-top: 1px solid var(--border);
+    background: var(--paper);
+    border-left: 1px solid rgba(28, 26, 23, 0.08);
+    border-top: 1px solid rgba(28, 26, 23, 0.08);
     transform: rotate(45deg);
   }
   .info-wrap:hover .info-tooltip,
@@ -177,12 +180,13 @@
   .stage-prompt {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: 1.85rem;
-    letter-spacing: -0.015em;
+    font-size: 2.2rem;
+    letter-spacing: -0.02em;
     color: var(--text-main);
     text-align: center;
     line-height: 1.15;
     margin: 0;
+    text-wrap: balance;
   }
 
   .mic-button {
@@ -326,22 +330,20 @@
     white-space: pre-wrap;
     word-wrap: break-word;
     background: var(--paper);
-    border: 1px solid rgba(30, 28, 26, 0.1);
-    border-radius: 4px;
+    border: none;
+    border-radius: 6px;
     padding: 1.2rem 1.4rem;
     margin: 0;
     cursor: text;
     outline: none;
-    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    transition: box-shadow 0.15s;
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.06), inset 0 0 0 1px rgba(28, 26, 23, 0.04), 0 1px 0 rgba(255,255,255,0.7);
   }
   .prompt-card pre:hover {
-    background: #FBF7EA;
-    border-color: rgba(30, 28, 26, 0.16);
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.07), inset 0 0 0 1px rgba(28, 26, 23, 0.05), 0 1px 0 rgba(255,255,255,0.7);
   }
   .prompt-card pre:focus {
-    background: white;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08);
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.06), inset 0 0 0 1px rgba(13, 148, 136, 0.2), 0 0 0 3px rgba(13, 148, 136, 0.06);
   }
 
   /* Collapsible preview wrapper — compact by default, expands on click */
@@ -358,7 +360,7 @@
     position: absolute;
     left: 1px; right: 1px; bottom: 1px;
     padding: 2rem 0 0.7rem;
-    background: linear-gradient(to bottom, rgba(246, 247, 244, 0) 0%, var(--paper) 70%);
+    background: linear-gradient(to bottom, rgba(253, 252, 248, 0) 0%, var(--paper) 70%);
     border-radius: 0 0 4px 4px;
     text-align: center;
     font-family: var(--font-ui);
@@ -383,36 +385,36 @@
     flex-wrap: wrap;
   }
   .btn-primary {
-    background: var(--accent);
-    color: white;
+    background: var(--bg-dark);
+    color: var(--text-inverse);
     border: none;
     border-radius: 10px;
     padding: 0.85rem 1.5rem;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
+    font-weight: 510;
     cursor: pointer;
     flex: 1;
-    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
     transition: all 0.2s;
   }
-  .btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
+  .btn-primary:hover { background: #2A2825; transform: translateY(-1px); }
   .btn-primary.copied {
-    background: #0F766E;
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.18);
+    background: var(--accent);
+    color: white;
   }
   .btn-secondary {
-    background: none;
-    border: 1px solid var(--border);
+    background: rgba(28, 26, 23, 0.05);
+    border: none;
     border-radius: 10px;
     padding: 0.85rem 1.25rem;
     font-family: inherit;
     font-size: 0.9rem;
+    font-weight: 510;
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s;
   }
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-secondary:hover { background: rgba(28, 26, 23, 0.09); color: var(--text-main); }
 
   /* Bottom fallback bar — in-flow at the bottom of the viewport */
   .bottom-bar {
@@ -431,29 +433,31 @@
   .mini-input {
     flex: 1;
     padding: 0.85rem 1.1rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 0.92rem;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
     background: var(--paper);
     color: var(--text-main);
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.05), 0 1px 0 rgba(255,255,255,0.6);
   }
   .mini-input::placeholder { color: var(--text-muted); }
-  .mini-input:focus { outline: none; border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08); }
+  .mini-input:focus { outline: none; box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.05), 0 0 0 2px rgba(13, 148, 136, 0.1), 0 0 0 1px rgba(13, 148, 136, 0.2); }
   .mic-mini {
     width: 46px;
     height: 46px;
-    border-radius: 50%;
-    background: var(--paper);
-    border: 1px solid var(--border);
-    color: var(--accent);
+    border-radius: 12px;
+    background: var(--accent);
+    border: none;
+    color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
   }
-  .mic-mini:hover { border-color: var(--accent); background: var(--accent); color: white; }
+  .mic-mini:hover { background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3); }
   .mic-mini svg { width: 20px; height: 20px; }
 
   /* Stage indicator chip */
@@ -462,7 +466,7 @@
     top: 5rem;
     left: 50%;
     transform: translateX(-50%);
-    background: white;
+    background: var(--paper);
     border: 1px solid var(--border);
     border-radius: 20px;
     padding: 0.35rem 0.875rem;
@@ -560,29 +564,27 @@
     min-height: 100px;
     max-height: 220px;
     font-family: var(--font-display);
-    font-size: 1.4rem;
+    font-size: 1.45rem;
     font-weight: 400;
     line-height: 1.4;
     letter-spacing: -0.005em;
     color: var(--text-main);
     background: var(--paper);
-    border: 1px solid rgba(30, 28, 26, 0.1);
-    border-radius: 4px;
-    padding: 1.05rem 1.3rem;
+    border: none;
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem;
     resize: none;
     cursor: text;
     overflow-y: auto;
-    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    transition: box-shadow 0.15s;
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.06), inset 0 0 0 1px rgba(28, 26, 23, 0.04), 0 1px 0 rgba(255,255,255,0.7);
   }
   .transcript-editable:hover {
-    background: #FBF7EA;
-    border-color: rgba(30, 28, 26, 0.16);
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.07), inset 0 0 0 1px rgba(28, 26, 23, 0.05), 0 1px 0 rgba(255,255,255,0.7);
   }
   .transcript-editable:focus {
     outline: none;
-    background: white;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08);
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.06), inset 0 0 0 1px rgba(13, 148, 136, 0.2), 0 0 0 3px rgba(13, 148, 136, 0.06);
   }
 
   /* Interview */
@@ -631,28 +633,28 @@
     width: 44px;
     height: 44px;
     flex-shrink: 0;
-    border-radius: 50%;
-    background: transparent;
-    border: 1.5px solid var(--border);
-    color: var(--text-secondary);
+    border-radius: 12px;
+    background: var(--accent);
+    border: none;
+    color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.15s;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
     position: relative;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
   }
   .interview-mic:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    transform: scale(1.05);
+    background: var(--accent-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3);
   }
   .interview-mic svg { width: 18px; height: 18px; }
 
   /* Active-recording state — pulsing teal button with ring emanation */
   .interview-mic.recording {
     background: var(--accent);
-    border-color: var(--accent);
     color: white;
     animation: mic-pulse 1.4s ease-in-out infinite;
   }
@@ -661,7 +663,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border-radius: 50%;
+    border-radius: 14px;
     border: 2px solid rgba(20, 184, 166, 0.5);
     animation: mic-ring-out 1.6s ease-out infinite;
     pointer-events: none;
@@ -715,40 +717,39 @@
 
   /* Outlined buttons — clear affordance, minimal chrome */
   .btn-text {
-    background: transparent;
-    border: 1px solid rgba(26, 26, 46, 0.18);
+    background: rgba(28, 26, 23, 0.05);
+    border: none;
     font-family: var(--font-ui);
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--text-main);
+    font-size: 0.88rem;
+    font-weight: 510;
+    color: var(--text-secondary);
     cursor: pointer;
-    padding: 0.7rem 1.35rem;
+    padding: 0.7rem 1.25rem;
     border-radius: 8px;
-    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    transition: background 0.15s, color 0.15s;
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
     line-height: 1;
   }
   .btn-text:hover {
-    border-color: var(--text-main);
-    background: rgba(26, 26, 46, 0.04);
+    background: rgba(28, 26, 23, 0.09);
+    color: var(--text-main);
   }
   .btn-text.primary {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(13, 148, 136, 0.05);
+    border-color: var(--bg-dark);
+    color: var(--text-inverse);
+    background: var(--bg-dark);
   }
   .btn-text.primary:hover {
-    background: rgba(13, 148, 136, 0.1);
-    border-color: var(--accent-light);
-    color: var(--accent-light);
+    background: #2A2825;
+    border-color: #2A2825;
+    color: var(--text-inverse);
   }
   .btn-text .arrow { transition: transform 0.15s; display: inline-block; }
   .btn-text.primary:hover .arrow { transform: translateX(3px); }
   .btn-text.copied {
     color: var(--accent);
-    border-color: rgba(13, 148, 136, 0.3);
     background: rgba(13, 148, 136, 0.08);
     pointer-events: none;
   }
@@ -1149,10 +1150,10 @@
     align-items: center;
     gap: 0.6rem;
     padding: 0.45rem 0.9rem 0.45rem 0.55rem;
-    background: white;
+    background: var(--paper);
     border: 1px solid var(--border);
     border-radius: 999px;
-    box-shadow: 0 6px 20px rgba(26, 26, 46, 0.06);
+    box-shadow: 0 4px 16px rgba(28, 26, 23, 0.06);
     z-index: 40;
   }
   .attribution-text {
@@ -1252,14 +1253,15 @@
   .signup-cta input {
     flex: 1 1 110px;
     padding: 0.55rem 0.8rem;
-    border: 1px solid var(--border);
+    border: none;
     border-radius: 6px;
     font-family: var(--font-ui);
     font-size: 0.85rem;
     background: var(--paper);
     color: var(--text-main);
+    box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.05), 0 1px 0 rgba(255,255,255,0.6);
   }
-  .signup-cta input:focus { outline: none; border-color: var(--accent); background: white; }
+  .signup-cta input:focus { outline: none; box-shadow: inset 0 1px 3px rgba(28, 26, 23, 0.05), 0 0 0 2px rgba(13, 148, 136, 0.1), 0 0 0 1px rgba(13, 148, 136, 0.2); }
   .signup-cta button {
     background: var(--accent);
     color: white;
