@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nib — UX Preview</title>
-<meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Preview of the upcoming Nib UX redesign.">
+<title>Nib — Voice to Prompt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1311,7 +1309,6 @@
 <main>
   <!-- IDLE -->
   <div class="stage" id="stageIdle">
-    <h1 class="stage-prompt">What do you want AI to do?</h1>
     <div class="mascot-stage state-idle" onclick="goListening()" aria-label="Tap to speak">
       <div class="mascot-halo"></div>
       <div class="mascot-body-wrap">
@@ -1330,12 +1327,12 @@
         </svg>
       </div>
     </div>
-    <div class="mic-label">Tap Nib to speak · or type below</div>
+    <h1 class="stage-prompt">What do you want AI to do?</h1>
+    <div class="mic-label">Tap Nib to speak, or type below</div>
   </div>
 
   <!-- LISTENING -->
   <div class="stage hidden" id="stageListening">
-    <h1 class="stage-prompt">Listening…</h1>
     <div class="mascot-stage state-listening" onclick="goListening()" aria-label="Tap to stop">
       <div class="mascot-halo"></div>
       <div class="m-ring"></div>
@@ -1354,6 +1351,7 @@
         </svg>
       </div>
     </div>
+    <h1 class="stage-prompt">Listening…</h1>
     <div class="transcript-live" id="liveTranscript">Listening… tap Nib again when you're done.</div>
   </div>
 
@@ -1531,11 +1529,6 @@ Direct, technical, concrete. No marketing fluff. Use code snippets sparingly but
       </svg>
     </button>
   </div>
-</div>
-
-<!-- Subtle preview banner so visitors know this isn't the live app -->
-<div class="preview-banner">
-  Preview <span>· UX redesign in progress · <a href="/nib/">open the live app</a></span>
 </div>
 
 <script>
