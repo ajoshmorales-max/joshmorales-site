@@ -81,13 +81,20 @@
 
   /* Info button + tooltip */
   .info-wrap { position: relative; }
+  /* Info button — fixed top-right, independent of header */
+  .info-wrap {
+    position: fixed;
+    top: 1rem;
+    right: 1.25rem;
+    z-index: 50;
+  }
   .btn-info {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: transparent;
-    color: rgba(255,255,255,0.5);
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--text-muted);
     font-family: var(--font-ui);
     font-size: 0.82rem;
     font-weight: 600;
@@ -96,8 +103,9 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(28, 26, 23, 0.06);
   }
-  .btn-info:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.8); }
+  .btn-info:hover { border-color: rgba(28, 26, 23, 0.2); color: var(--text-secondary); }
   .info-tooltip {
     position: absolute;
     top: calc(100% + 10px);
@@ -1276,29 +1284,13 @@
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <span class="logo-wordmark">nib</span>
-    <svg class="logo-mascot" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <g class="lm-body">
-        <path d="M16 28 Q16 12 30 12 Q44 12 44 28 L44 38 Q44 50 30 50 Q16 50 16 38 Z" fill="#E0A458"/>
-        <ellipse cx="23" cy="21" rx="5" ry="3" fill="rgba(255,255,255,0.3)"/>
-        <circle class="lm-eye" cx="24" cy="30" r="2.4" fill="#1A1A2E"/>
-        <circle class="lm-eye" cx="36" cy="30" r="2.4" fill="#1A1A2E"/>
-        <path d="M25 37 Q30 40 35 37" stroke="#1A1A2E" stroke-width="1.7" fill="none" stroke-linecap="round"/>
-      </g>
-    </svg>
+<div class="info-wrap" tabindex="0">
+  <button class="btn-info" aria-label="What is Nib?">?</button>
+  <div class="info-tooltip">
+    <strong>What is Nib?</strong>
+    Nib turns your raw idea into a ready-to-use AI prompt. Describe what you want an AI to do — in your own words — and Nib shapes it into a structured prompt you can paste into Claude, ChatGPT, Midjourney, or any other model.
   </div>
-  <div class="header-right">
-    <div class="info-wrap" tabindex="0">
-      <button class="btn-info" aria-label="What is Nib?">?</button>
-      <div class="info-tooltip">
-        <strong>What is Nib?</strong>
-        Nib turns your raw idea into a ready-to-use AI prompt. Describe what you want an AI to do — in your own words — and Nib shapes it into a structured prompt you can paste into Claude, ChatGPT, Midjourney, or any other model.
-      </div>
-    </div>
-  </div>
-</header>
+</div>
 
 
 <main>
